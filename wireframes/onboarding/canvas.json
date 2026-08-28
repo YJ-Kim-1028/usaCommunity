@@ -1,0 +1,20 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "title": "1. 계정 생성", "page": "onboarding" },
+    { "file": "Step2Profile.dc.html", "x": 470, "y": 0, "w": 390, "h": 844, "title": "2. 프로필 입력", "page": "onboarding" },
+    { "file": "Step3Mbti.dc.html", "x": 940, "y": 0, "w": 390, "h": 844, "title": "3. MBTI 선택", "page": "onboarding" },
+    { "file": "Step4Result.dc.html", "x": 1410, "y": 0, "w": 390, "h": 844, "title": "4. 일주 결과", "page": "onboarding" },
+    { "file": "Feed.dc.html", "x": 0, "y": 0, "w": 390, "h": 844, "title": "1. 메인 피드", "page": "mainapp" },
+    { "file": "PostDetail.dc.html", "x": 470, "y": 0, "w": 390, "h": 844, "title": "2. 게시글 상세", "page": "mainapp" },
+    { "file": "Profile.dc.html", "x": 940, "y": 0, "w": 390, "h": 844, "title": "3. 프로필", "page": "mainapp" }
+  ],
+  "annotations": [
+    { "id": "flow-note", "x": 0, "y": -70, "w": 700, "text": "MBTI x 일주 커뮤니티 - 온보딩 4단계 (저해상도 와이어프레임)", "page": "onboarding" },
+    { "id": "mainapp-note", "x": 0, "y": -70, "w": 700, "text": "메인 앱 화면 - 피드 -> 게시글 상세 -> 프로필", "page": "mainapp" }
+  ],
+  "pages": [
+    { "id": "onboarding", "name": "온보딩" },
+    { "id": "mainapp", "name": "메인 앱" }
+  ],
+  "launch": { "view": "canvas", "page": "onboarding" }
+}

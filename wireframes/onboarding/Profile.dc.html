@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; overflow: hidden; }
+    .screen { font-family: 'Gaegu', cursive, sans-serif; color: #2b2b2b; line-height: 1.25; }
+    a { color: #2b2b2b; text-decoration: underline; }
+    a:hover { color: #555; }
+    .badge { border:2px solid #2b2b2b; border-radius:999px; padding:6px 16px; font-size:13px; }
+  </style>
+</helmet>
+<div class="screen" style="position:relative;width:390px;height:844px;background:#f7f5f0;display:flex;flex-direction:column;overflow:hidden;">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:28px 20px 0;">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="#2b2b2b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div style="font-size:15px;font-weight:700;">마이프로필</div>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="#2b2b2b" stroke-width="2"/><path d="M12 3v2M12 19v2M4 12H2M22 12h-2M5.6 5.6 4.2 4.2M19.8 19.8l-1.4-1.4M5.6 18.4 4.2 19.8M19.8 4.2l-1.4 1.4" stroke="#2b2b2b" stroke-width="2" stroke-linecap="round"/></svg>
+  </div>
+
+  <div style="display:flex;flex-direction:column;align-items:center;padding:22px 20px;">
+    <svg width="76" height="76" viewBox="0 0 76 76" fill="none" style="margin-bottom:12px;">
+      <circle cx="38" cy="38" r="36" stroke="#2b2b2b" stroke-width="2" stroke-dasharray="4 5"/>
+      <circle cx="38" cy="30" r="12" stroke="#2b2b2b" stroke-width="2"/>
+      <path d="M14 66c5-15 17-21 24-21s19 6 24 21" stroke="#2b2b2b" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <div style="font-size:19px;font-weight:700;margin-bottom:10px;">달빛여행자</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <div class="badge">INFP</div>
+      <div class="badge" style="background:#2b2b2b;color:#fff;">병오일주</div>
+    </div>
+    <div style="display:flex;gap:22px;font-size:13px;color:#5a5a5a;">
+      <div>게시글 <span style="font-weight:700;color:#2b2b2b;">12</span></div>
+      <div>댓글 <span style="font-weight:700;color:#2b2b2b;">37</span></div>
+    </div>
+  </div>
+
+  <div style="display:flex;padding:0 20px;border-bottom:2px solid #e4ddcf;font-size:14px;">
+    <div style="padding-bottom:10px;margin-right:22px;border-bottom:3px solid #2b2b2b;font-weight:700;">내가 쓴 글</div>
+    <div style="padding-bottom:10px;color:#8a8a8a;">댓글</div>
+  </div>
+
+  <div style="flex:1;min-height:0;overflow:hidden;padding:16px 20px;display:flex;flex-direction:column;gap:14px;">
+    <div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:3px;">저만 이런 성격이신 분?</div>
+      <div style="font-size:12px;color:#8a8a8a;">자유 · 8.28 · 댓글 3</div>
+    </div>
+    <div style="height:1px;background:#e4ddcf;"></div>
+    <div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:3px;">일주 궁합 다들 믿으세요?</div>
+      <div style="font-size:12px;color:#8a8a8a;">연애·고민 · 8.20 · 댓글 11</div>
+    </div>
+    <div style="height:1px;background:#e4ddcf;"></div>
+    <div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:3px;">INFP 갑자기 외향적이 될 때</div>
+      <div style="font-size:12px;color:#8a8a8a;">유머 · 8.15 · 댓글 6</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

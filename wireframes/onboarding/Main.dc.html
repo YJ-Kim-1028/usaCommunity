@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; overflow: hidden; }
+    .screen { font-family: 'Gaegu', cursive, sans-serif; color: #2b2b2b; line-height: 1.25; }
+    a { color: #2b2b2b; text-decoration: underline; }
+    a:hover { color: #555; }
+    .field-box { border: 2px solid #2b2b2b; border-radius: 10px; padding: 13px 14px; font-size: 14px; min-height: 44px; display: flex; align-items: center; }
+    .label { font-size: 13px; color: #5a5a5a; margin-bottom: 6px; display: block; }
+  </style>
+</helmet>
+<div class="screen" style="width:390px;height:844px;background:#f7f5f0;box-sizing:border-box;padding:32px 24px;display:flex;flex-direction:column;overflow:hidden;">
+
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:26px;">
+    <div style="display:flex;gap:6px;flex:1;">
+      <div style="height:6px;flex:1;background:#2b2b2b;border-radius:3px;"></div>
+      <div style="height:6px;flex:1;background:#ddd8cd;border-radius:3px;"></div>
+      <div style="height:6px;flex:1;background:#ddd8cd;border-radius:3px;"></div>
+      <div style="height:6px;flex:1;background:#ddd8cd;border-radius:3px;"></div>
+    </div>
+    <div style="font-size:14px;color:#8a8a8a;white-space:nowrap;">1 / 4</div>
+  </div>
+
+  <h1 style="font-size:26px;margin:0 0 4px;">계정을 만들어요</h1>
+  <p style="font-size:14px;color:#8a8a8a;margin:0 0 22px;">이메일과 비밀번호로 가입해요</p>
+
+  <span class="label">이메일</span>
+  <div style="display:flex;gap:8px;margin-bottom:6px;">
+    <div class="field-box" style="flex:1;color:#aaa;">you@email.com</div>
+    <div class="field-box" style="white-space:nowrap;font-size:13px;padding-left:12px;padding-right:12px;">인증코드 발송</div>
+  </div>
+  <div style="font-size:12px;color:#8a8a8a;margin-bottom:14px;">인증코드가 발송됐어요 (유효시간 5분)</div>
+
+  <span class="label">인증코드</span>
+  <div style="display:flex;gap:8px;margin-bottom:18px;">
+    <div class="field-box" style="flex:1;color:#aaa;">6자리 입력</div>
+    <div class="field-box" style="white-space:nowrap;font-size:13px;padding-left:16px;padding-right:16px;">확인</div>
+  </div>
+
+  <span class="label">비밀번호</span>
+  <div class="field-box" style="margin-bottom:14px;color:#aaa;letter-spacing:2px;">••••••••</div>
+
+  <span class="label">비밀번호 확인</span>
+  <div class="field-box" style="margin-bottom:18px;color:#aaa;letter-spacing:2px;">••••••••</div>
+
+  <div style="flex:1;"></div>
+
+  <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:22px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="1" y="1" width="18" height="18" rx="4" stroke="#2b2b2b" stroke-width="2"/><path d="M5 10l3 3 7-7" stroke="#2b2b2b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div style="font-size:14px;">이용약관 동의 <span style="color:#8a8a8a;">(필수)</span></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="1" y="1" width="18" height="18" rx="4" stroke="#2b2b2b" stroke-width="2"/><path d="M5 10l3 3 7-7" stroke="#2b2b2b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div style="font-size:14px;">개인정보처리방침 동의 <span style="color:#8a8a8a;">(필수)</span></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="1" y="1" width="18" height="18" rx="4" stroke="#2b2b2b" stroke-width="2"/><path d="M5 10l3 3 7-7" stroke="#2b2b2b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div style="font-size:14px;">만 14세 이상입니다 <span style="color:#8a8a8a;">(필수)</span></div>
+    </div>
+  </div>
+
+  <div style="background:#2b2b2b;color:#fff;text-align:center;padding:16px;border-radius:10px;font-size:16px;">다음</div>
+</div>
+</x-dc>
+</body>
+</html>

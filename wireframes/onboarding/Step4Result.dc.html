@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; overflow: hidden; }
+    .screen { font-family: 'Gaegu', cursive, sans-serif; color: #2b2b2b; line-height: 1.25; }
+    a { color: #2b2b2b; text-decoration: underline; }
+    a:hover { color: #555; }
+    .badge { border:2px solid #2b2b2b; border-radius:999px; padding:8px 18px; font-size:14px; }
+  </style>
+</helmet>
+<div class="screen" style="width:390px;height:844px;background:#f7f5f0;box-sizing:border-box;padding:32px 24px;display:flex;flex-direction:column;overflow:hidden;">
+
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:26px;">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="#2b2b2b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div style="display:flex;gap:6px;flex:1;">
+      <div style="height:6px;flex:1;background:#2b2b2b;border-radius:3px;"></div>
+      <div style="height:6px;flex:1;background:#2b2b2b;border-radius:3px;"></div>
+      <div style="height:6px;flex:1;background:#2b2b2b;border-radius:3px;"></div>
+      <div style="height:6px;flex:1;background:#2b2b2b;border-radius:3px;"></div>
+    </div>
+    <div style="font-size:14px;color:#8a8a8a;white-space:nowrap;">4 / 4</div>
+  </div>
+
+  <h1 style="font-size:26px;margin:0 0 4px;">프로필이 완성됐어요</h1>
+  <p style="font-size:14px;color:#8a8a8a;margin:0 0 24px;">이 뱃지로 커뮤니티에서 활동하게 돼요</p>
+
+  <div style="flex:1;"></div>
+
+  <div style="border:2px solid #2b2b2b;border-radius:16px;padding:32px 20px;display:flex;flex-direction:column;align-items:center;margin-bottom:20px;">
+    <svg width="72" height="72" viewBox="0 0 72 72" fill="none" style="margin-bottom:16px;">
+      <circle cx="36" cy="36" r="34" stroke="#2b2b2b" stroke-width="2" stroke-dasharray="4 5"/>
+      <circle cx="36" cy="28" r="11" stroke="#2b2b2b" stroke-width="2"/>
+      <path d="M14 62c4-14 16-20 22-20s18 6 22 20" stroke="#2b2b2b" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <div style="font-size:19px;font-weight:700;margin-bottom:14px;">닉네임</div>
+    <div style="display:flex;gap:10px;margin-bottom:16px;">
+      <div class="badge">INTJ</div>
+      <div class="badge" style="background:#2b2b2b;color:#fff;">갑자일주</div>
+    </div>
+    <div style="font-size:13px;color:#8a8a8a;text-align:center;line-height:1.5;">갑자일주 · 리더십있고 주도적인 기운</div>
+  </div>
+
+  <div style="flex:1;"></div>
+
+  <div style="background:#2b2b2b;color:#fff;text-align:center;padding:16px;border-radius:10px;font-size:16px;">커뮤니티 시작하기</div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; overflow: hidden; }
+    .screen { font-family: 'Gaegu', cursive, sans-serif; color: #2b2b2b; line-height: 1.25; }
+    a { color: #2b2b2b; text-decoration: underline; }
+    a:hover { color: #555; }
+    .mbti-cell { display:flex; align-items:center; justify-content:center; border-radius:10px; font-size:15px; min-height:56px; }
+  </style>
+</helmet>
+<div class="screen" style="width:390px;height:844px;background:#f7f5f0;box-sizing:border-box;padding:32px 24px;display:flex;flex-direction:column;overflow:hidden;">
+
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:26px;">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="#2b2b2b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div style="display:flex;gap:6px;flex:1;">
+      <div style="height:6px;flex:1;background:#2b2b2b;border-radius:3px;"></div>
+      <div style="height:6px;flex:1;background:#2b2b2b;border-radius:3px;"></div>
+      <div style="height:6px;flex:1;background:#2b2b2b;border-radius:3px;"></div>
+      <div style="height:6px;flex:1;background:#ddd8cd;border-radius:3px;"></div>
+    </div>
+    <div style="font-size:14px;color:#8a8a8a;white-space:nowrap;">3 / 4</div>
+  </div>
+
+  <h1 style="font-size:26px;margin:0 0 4px;">MBTI를 선택해주세요</h1>
+  <p style="font-size:14px;color:#8a8a8a;margin:0 0 6px;">프로필 뱃지로 표시돼요</p>
+  <div style="margin-bottom:18px;"><a href="#" style="font-size:13px;">MBTI를 모르시나요? 간단 테스트 하러가기 →</a></div>
+
+  <div style="display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));gap:10px;margin-bottom:18px;">
+    <div class="mbti-cell" style="background:#2b2b2b;color:#fff;border:2px solid #2b2b2b;">INTJ</div>
+    <div class="mbti-cell" style="border:2px solid #ccc4b3;color:#4b4b4b;">INTP</div>
+    <div class="mbti-cell" style="border:2px solid #ccc4b3;color:#4b4b4b;">ENTJ</div>
+    <div class="mbti-cell" style="border:2px solid #ccc4b3;color:#4b4b4b;">ENTP</div>
+
+    <div class="mbti-cell" style="border:2px solid #ccc4b3;color:#4b4b4b;">INFJ</div>
+    <div class="mbti-cell" style="border:2px solid #ccc4b3;color:#4b4b4b;">INFP</div>
+    <div class="mbti-cell" style="border:2px solid #ccc4b3;color:#4b4b4b;">ENFJ</div>
+    <div class="mbti-cell" style="border:2px solid #ccc4b3;color:#4b4b4b;">ENFP</div>
+
+    <div class="mbti-cell" style="border:2px solid #ccc4b3;color:#4b4b4b;">ISTJ</div>
+    <div class="mbti-cell" style="border:2px solid #ccc4b3;color:#4b4b4b;">ISFJ</div>
+    <div class="mbti-cell" style="border:2px solid #ccc4b3;color:#4b4b4b;">ESTJ</div>
+    <div class="mbti-cell" style="border:2px solid #ccc4b3;color:#4b4b4b;">ESFJ</div>
+
+    <div class="mbti-cell" style="border:2px solid #ccc4b3;color:#4b4b4b;">ISTP</div>
+    <div class="mbti-cell" style="border:2px solid #ccc4b3;color:#4b4b4b;">ISFP</div>
+    <div class="mbti-cell" style="border:2px solid #ccc4b3;color:#4b4b4b;">ESTP</div>
+    <div class="mbti-cell" style="border:2px solid #ccc4b3;color:#4b4b4b;">ESFP</div>
+  </div>
+
+  <div style="flex:1;"></div>
+
+  <div style="background:#2b2b2b;color:#fff;text-align:center;padding:16px;border-radius:10px;font-size:16px;">다음</div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; overflow: hidden; }
+    .screen { font-family: 'Gaegu', cursive, sans-serif; color: #2b2b2b; line-height: 1.25; }
+    a { color: #2b2b2b; text-decoration: underline; }
+    a:hover { color: #555; }
+    .pill { border-radius: 999px; font-size: 12px; padding: 3px 10px; border: 1.5px solid #2b2b2b; }
+    .navitem { display:flex; flex-direction:column; align-items:center; gap:3px; font-size:11px; flex:1; }
+  </style>
+</helmet>
+<div class="screen" style="position:relative;width:390px;height:844px;background:#f7f5f0;display:flex;flex-direction:column;overflow:hidden;">
+
+  <div style="padding:28px 20px 0 20px;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div style="font-size:22px;font-weight:700;">유사과학</div>
+      <div style="display:flex;gap:14px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#2b2b2b" stroke-width="2"/><path d="M20 20l-4-4" stroke="#2b2b2b" stroke-width="2" stroke-linecap="round"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3a5 5 0 0 0-5 5v3.5c0 .8-.3 1.6-.9 2.2L5 15h14l-1.1-1.3c-.6-.6-.9-1.4-.9-2.2V8a5 5 0 0 0-5-5Z" stroke="#2b2b2b" stroke-width="2" stroke-linejoin="round"/><path d="M10 18a2 2 0 0 0 4 0" stroke="#2b2b2b" stroke-width="2" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 2c1 3-3 4-3 7a3 3 0 0 0 6 0c1.5 1 2 3 2 4.5A7 7 0 1 1 8 8c1 1.5 2 1 2-1 0-1.5-.5-3 2-5Z" stroke="#c1592f" stroke-width="2" stroke-linejoin="round"/></svg>
+        <div style="font-size:13px;font-weight:700;color:#c1592f;">지금 인기있는 글</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <div style="flex:1;border:2px solid #c1592f;background:#fbe9e1;border-radius:10px;padding:9px 11px;">
+          <div style="font-size:10px;font-weight:700;color:#c1592f;margin-bottom:2px;">1위</div>
+          <div style="font-size:12px;font-weight:700;">일주 궁합 진짜 잘 맞는듯</div>
+        </div>
+        <div style="flex:1;border:2px solid #c1592f;background:#fbe9e1;border-radius:10px;padding:9px 11px;">
+          <div style="font-size:10px;font-weight:700;color:#c1592f;margin-bottom:2px;">2위</div>
+          <div style="font-size:12px;font-weight:700;">저만 이런 성격이신 분?</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-bottom:14px;font-size:15px;">
+      <div style="padding-bottom:6px;border-bottom:3px solid #2b2b2b;font-weight:700;">자유</div>
+      <div style="padding-bottom:6px;color:#8a8a8a;">연애·고민</div>
+      <div style="padding-bottom:6px;color:#8a8a8a;">정보</div>
+      <div style="padding-bottom:6px;color:#8a8a8a;">유머</div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <div class="pill" style="background:#2b2b2b;color:#fff;border-color:#2b2b2b;">전체</div>
+      <div class="pill" style="color:#5a5a5a;">내 일주만</div>
+      <div class="pill" style="color:#5a5a5a;">내 MBTI만</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;">
+
+      <div style="border:2px solid #2b2b2b;border-radius:12px;padding:14px;">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+          <div style="width:22px;height:22px;border-radius:50%;background:#f0d9c8;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">달</div>
+          <div style="font-size:12px;color:#5a5a5a;">달빛여행자</div>
+          <div style="font-size:12px;color:#8a8a8a;">· 12분 전</div>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:8px;">
+          <div class="pill" style="padding:2px 8px;">INFP</div>
+          <div class="pill" style="padding:2px 8px;">병오일주</div>
+        </div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:4px;">저만 이런 성격이신 분?</div>
+        <div style="font-size:13px;color:#7a7a7a;margin-bottom:10px;">요즘 부쩍 혼자 있는 시간이 편해지는데 다들 그런가요...</div>
+        <div style="display:flex;gap:14px;font-size:12px;color:#5a5a5a;">
+          <div style="display:flex;align-items:center;gap:4px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 20s-7-4.6-9.5-9C1 8 2 4.5 6 4c2.3-.3 4 1 6 3 2-2 3.7-3.3 6-3 4 .5 5 4 3.5 7-2.5 4.4-9.5 9-9.5 9Z" stroke="#5a5a5a" stroke-width="2" stroke-linejoin="round"/></svg>24</div>
+          <div style="display:flex;align-items:center;gap:4px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H9l-4 4V5Z" stroke="#5a5a5a" stroke-width="2" stroke-linejoin="round"/></svg>8</div>
+        </div>
+      </div>
+
+      <div style="border:2px solid #2b2b2b;border-radius:12px;padding:14px;">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+          <div style="width:22px;height:22px;border-radius:50%;background:#d9e4d3;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">별</div>
+          <div style="font-size:12px;color:#5a5a5a;">별자리덕후</div>
+          <div style="font-size:12px;color:#8a8a8a;">· 40분 전</div>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:8px;">
+          <div class="pill" style="padding:2px 8px;">ENTJ</div>
+          <div class="pill" style="padding:2px 8px;">갑자일주</div>
+        </div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:4px;">일주 궁합 진짜 잘 맞는듯</div>
+        <div style="font-size:13px;color:#7a7a7a;margin-bottom:10px;">친구랑 저랑 일주 궁합 봤는데 소름 돋았어요...</div>
+        <div style="display:flex;gap:14px;font-size:12px;color:#5a5a5a;">
+          <div style="display:flex;align-items:center;gap:4px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 20s-7-4.6-9.5-9C1 8 2 4.5 6 4c2.3-.3 4 1 6 3 2-2 3.7-3.3 6-3 4 .5 5 4 3.5 7-2.5 4.4-9.5 9-9.5 9Z" stroke="#5a5a5a" stroke-width="2" stroke-linejoin="round"/></svg>51</div>
+          <div style="display:flex;align-items:center;gap:4px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H9l-4 4V5Z" stroke="#5a5a5a" stroke-width="2" stroke-linejoin="round"/></svg>19</div>
+        </div>
+      </div>
+
+      <div style="border:2px solid #2b2b2b;border-radius:12px;padding:14px;">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px;">
+          <div style="width:22px;height:22px;border-radius:50%;background:#ded4e8;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">조</div>
+          <div style="font-size:12px;color:#5a5a5a;">조용한물고기</div>
+          <div style="font-size:12px;color:#8a8a8a;">· 1시간 전</div>
+        </div>
+        <div style="display:flex;gap:6px;margin-bottom:8px;">
+          <div class="pill" style="padding:2px 8px;">ISTP</div>
+          <div class="pill" style="padding:2px 8px;">신묘일주</div>
+        </div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:4px;">오늘 하루 어떠셨나요</div>
+        <div style="font-size:13px;color:#7a7a7a;">그냥 아무 얘기나 하고 싶어서 써봐요...</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="position:absolute;right:20px;bottom:96px;width:52px;height:52px;border-radius:50%;background:#2b2b2b;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 6px rgba(0,0,0,0.2);">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
+  </div>
+
+  <div style="display:flex;align-items:center;padding:12px 0 20px;border-top:2px solid #e4ddcf;">
+    <div class="navitem">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 11 12 4l8 7" stroke="#2b2b2b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v9h12v-9" stroke="#2b2b2b" stroke-width="2" stroke-linejoin="round"/></svg>
+      <div style="font-weight:700;">홈</div>
+    </div>
+    <div class="navitem" style="color:#b8b0a0;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="#b8b0a0" stroke-width="2"/><path d="M8 9h8M8 13h8M8 17h5" stroke="#b8b0a0" stroke-width="2" stroke-linecap="round"/></svg>
+      게시판
+    </div>
+    <div class="navitem" style="color:#b8b0a0;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3a5 5 0 0 0-5 5v3.5c0 .8-.3 1.6-.9 2.2L5 15h14l-1.1-1.3c-.6-.6-.9-1.4-.9-2.2V8a5 5 0 0 0-5-5Z" stroke="#b8b0a0" stroke-width="2" stroke-linejoin="round"/></svg>
+      알림
+    </div>
+    <div class="navitem" style="color:#b8b0a0;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#b8b0a0" stroke-width="2"/><path d="M4 20c1.5-4.5 5-6 8-6s6.5 1.5 8 6" stroke="#b8b0a0" stroke-width="2" stroke-linecap="round"/></svg>
+      마이
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
