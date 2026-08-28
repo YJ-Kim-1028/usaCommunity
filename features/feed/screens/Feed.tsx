@@ -8,7 +8,7 @@ import { Badge } from '@/components/Badge';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 import { posts, type Post } from '@/features/feed/mockData';
 
-const TOPICS = ['자유', '연애·고민', '정보', '유머'];
+const TOPICS = ['자유', '연애·고민', '정보', '유머', '연예'];
 const FILTERS = ['전체', '내 일주만', '내 MBTI만'];
 
 function PostCard({ post, onPress }: { post: Post; onPress: () => void }) {
