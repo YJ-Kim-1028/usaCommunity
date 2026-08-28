@@ -43,9 +43,16 @@
 ## 기술 스택 (1차 결정)
 - **개발 환경**: Node.js (로컬 확인된 버전 v24.11.1) + npm — Expo CLI/EAS CLI 실행에 필요
 - **프론트엔드**: React Native + Expo (iOS/Android 크로스플랫폼), EAS Build/Submit으로 배포
-- **백엔드/DB/인증/스토리지**: Supabase (Postgres, 이메일 인증 내장, 프로필 사진 Storage)
+- **백엔드/DB/인증/스토리지**: Supabase (Postgres, 이메일 인증 내장, 프로필 사진 Storage) — 프로젝트 생성 완료(Seoul 리전, Free), 클라이언트 연결까지 완료(`shared/lib/supabase.ts`, 키는 `.env.development`에 보관). 실제 API 연동은 아직
 - **일주 계산**: `@fullstackfamily/manseryeok`을 Supabase Edge Function에서 실행
 - **알림**: Expo Notifications + Supabase Edge Function 트리거
+- **DB 마이그레이션 관리**: Supabase CLI(공식 도구) 채택
+  - **이유**: 지금까지 SQL 파일을 Supabase 대시보드 SQL Editor에 수동 복사-붙여넣기 하던 걸 `supabase db push` 한 줄로 자동 적용 + 어떤 마이그레이션을 이미 적용했는지 자동 추적 가능. 추가로 `supabase gen types typescript`로 DB 스키마 그대로 TypeScript 타입을 자동 생성할 수 있어서, 다음 단계(실제 API 연동)에서 오타/스키마 불일치를 컴파일 타임에 잡을 수 있음
+  - Prisma/Drizzle 같은 ORM은 기각 — 이미 `@supabase/supabase-js`로 쿼리하기로 정했는데 ORM까지 얹으면 쿼리 방식이 중복/충돌함. CLI는 마이그레이션 자동화 도구일 뿐 쿼리 방식을 안 바꿔서 기존 결정과 안 부딪힘
+  - 마이그레이션 파일 위치가 `platform/db/`에서 Supabase CLI 표준 위치(`supabase/migrations/`)로 이동함
+
+**선택 검증 (2026-08-28, 웹 조사)**: Supabase는 2026년 기준 "1인 개발자/스타트업의 기본 백엔드"로 자리잡음 — Firebase 대비 대규모 읽기/쓰기에서 3~5배 저렴하고, "Supabase로 이전한다"는 검색량이 240% 증가(오히려 Firebase가 Postgres 쪽으로 수렴 중). Edge Function은 엣지 컴퓨팅이 표준 배포모델이 된 흐름에서 콜드스타트가 거의 없어 DB/Auth를 이미 Supabase로 쓰는 프로젝트엔 자연스럽게 맞음. 트렌드를 따라간 게 아니라 먼저 고른 선택이 트렌드와 맞아떨어진 것 — 포트폴리오에서 "왜 이 스택인지" 설명할 근거.
+  - 출처: [Supabase vs Firebase in 2026](https://dev.to/pockit_tools/supabase-vs-firebase-in-2026-the-honest-comparison-after-using-both-in-production-3e5), [Supabase Edge Functions: Complete Guide (2026)](https://blog.starmorph.com/blog/about-supabase-edge-functions), [Cloudflare Workers vs Supabase Edge Functions (2026)](https://www.srvrlss.io/compare/cloudflare-vs-supabase/)
 
 ## 리포지토리 구조 (확정)
 1인 개발이지만 실무처럼 **도메인(기능)별 팀 경계**를 연습하는 구조로 결정. 기능별 조직(데이터팀/인프라팀처럼 기술 전문분야로 나누는 방식)도 검토했으나 기각.
@@ -68,7 +75,7 @@ shared/                  → 여러 도메인이 공용으로 쓰는 것
   lib/supabase.ts        → Supabase 클라이언트
 platform/                → 인프라 성격 코드
   monitoring.ts          → Sentry 등 크래시 리포팅 초기화
-  db/                    → Supabase 스키마/마이그레이션
+supabase/migrations/     → Supabase 스키마/마이그레이션 (Supabase CLI 표준 위치)
 ```
 
 규칙: **다른 도메인 폴더 내부를 직접 import하지 않는다.** 필요하면 shared로 빼거나 정해진 방식으로만 접근 — 팀 간 경계를 지키는 연습.
