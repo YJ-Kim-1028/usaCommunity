@@ -36,3 +36,6 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# 블로그 글 초안(직접 올리는 용도, 저장소에는 올리지 않음)
+blog/
