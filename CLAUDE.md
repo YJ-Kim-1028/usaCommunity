@@ -20,3 +20,7 @@
 **리포지토리 구조**: `app/`(Expo Router 화면 진입점), `features/{auth,feed,profile}/`(도메인별, 서로 직접 import 금지), `shared/`(공용 UI·훅·Supabase 클라이언트), `platform/`(인프라 성격 코드), `supabase/migrations/`(DB 마이그레이션, Supabase CLI 표준 위치 — 새 스키마 변경은 `supabase migration new <이름>`으로 파일 만들고 여기 추가). 각 폴더의 `README.md`와 `project-draft.md`의 "리포지토리 구조" 섹션 참고.
 
 **와이어프레임**: 온보딩 4단계 + 메인 앱 3화면(피드/상세/프로필) 캔버스가 https://claude.ai/code/artifact/5bb30111-fe0c-4e23-9c53-fb10eb7aad56 에 있음.
+
+troubleshooting.md — 에러를 해결할 때마다 문제점 → 원인 → 해결방법으로 번호를 이어 추가
+
+**블로그 글(`blog/` 폴더)과 캡처에는 개인정보를 절대 넣지 않는다 (매우 중요).** 실명, 이메일, 전화번호, 주소, 생년월일, GitHub·네이버 등 계정 ID, Supabase 프로젝트 주소(ref)·키·토큰, `.env` 내용, 테스트 계정 이메일, 화면 캡처 속에 보이는 이런 정보 모두 해당한다. 캡처는 찍기 전에 화면에 개인정보가 없는지 확인하고, 있으면 가리거나 다시 찍는다. 글은 네이버 블로그에 올릴 용도라 말투는 사용자 블로그(code11298)에 맞추되 전문적이고 깔끔하게, 과장하거나 선을 넘는 표현은 쓰지 않는다.
