@@ -139,7 +139,7 @@ export default function Step2Profile() {
       </View>
 
       <Text style={styles.label}>
-        태어난 시간 <Text style={styles.required}>(선택하면 정확도 향상)</Text>
+        태어난 시간 <Text style={styles.required}>(선택)</Text>
       </Text>
       <View style={styles.row}>
         <TextInput
@@ -161,7 +161,7 @@ export default function Step2Profile() {
           onChangeText={(text) => update({ birthMinute: text })}
         />
       </View>
-      <Text style={styles.hint}>시간을 모르면 일주 정확도가 다소 낮아질 수 있어요</Text>
+      <Text style={styles.hint}>모르면 비워 두어도 돼요. 나중에 사주 기능에 쓸 수 있도록 저장해 둬요</Text>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
@@ -235,6 +235,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.text,
     minHeight: 48,
+    // 웹에서 입력칸이 기본 너비(글자 수 기준)를 고집해 좁은 화면에서 줄이 넘치는 것을 막는다
+    minWidth: 0,
   },
   centerText: {
     textAlign: 'center',
