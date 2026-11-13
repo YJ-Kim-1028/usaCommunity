@@ -1,30 +1,45 @@
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { Avatar } from '@/components/Avatar';
 import { Badge } from '@/components/Badge';
 import { Colors, Radius, Spacing } from '@/constants/theme';
-import { posts, type Post } from '@/features/feed/mockData';
+import {
+  POSTS_PAGE_SIZE,
+  fetchPopularPosts,
+  fetchPosts,
+  fetchTopics,
+  type PopularPost,
+  type PostItem,
+  type Topic,
+} from '@/features/feed/api';
+import { appendUnique } from '@/features/feed/posts';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
+import { useSession } from '@/lib/session';
+import { timeAgo, tintIndexOf } from '@/lib/time';
 
-const TOPICS = ['자유', '연애·고민', '정보', '유머', '연예'];
-const FILTERS = ['전체', '내 일주만', '내 MBTI만'];
+const FILTERS = ['전체', '내 일주만', '내 MBTI만'] as const;
+const PERIODS = ['이번 주', '전체'] as const;
+const WEEK_DAYS = 7;
 
-function PostCard({ post, onPress }: { post: Post; onPress: () => void }) {
+function PostCard({ post, onPress }: { post: PostItem; onPress: () => void }) {
   return (
     <Pressable style={styles.card} onPress={onPress}>
       <View style={styles.cardHeader}>
-        <Avatar initial={post.avatarInitial} tintIndex={post.avatarTintIndex} />
-        <Text style={styles.authorName}>{post.author}</Text>
-        <Text style={styles.timeAgo}>· {post.timeAgo}</Text>
+        <Avatar initial={post.author.nickname[0] ?? '?'} tintIndex={tintIndexOf(post.author.nickname)} />
+        <Text style={styles.authorName}>{post.author.nickname}</Text>
+        <Text style={styles.timeAgo}>· {timeAgo(post.createdAt)}</Text>
       </View>
       <View style={styles.badgeRow}>
-        <Badge label={post.mbti} />
-        <Badge label={post.iljuLabel} />
+        <Badge label={post.author.mbti} />
+        <Badge label={`${post.author.ilju}일주`} />
       </View>
       <Text style={styles.postTitle}>{post.title}</Text>
-      <Text style={styles.postPreview}>{post.preview}</Text>
+      <Text style={styles.postPreview} numberOfLines={2}>
+        {post.body}
+      </Text>
       <View style={styles.statsRow}>
         <View style={styles.statItem}>
           <Svg width={15} height={15} viewBox="0 0 24 24" fill="none">
@@ -50,20 +65,144 @@ function PostCard({ post, onPress }: { post: Post; onPress: () => void }) {
 
 export default function Feed() {
   const router = useRouter();
-  const [topic, setTopic] = useState(TOPICS[0]);
-  const [filter, setFilter] = useState(FILTERS[0]);
+  const { isWide } = useBreakpoint();
+  const { profile } = useSession();
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [topicId, setTopicId] = useState<string | undefined>();
+  const [filter, setFilter] = useState<(typeof FILTERS)[number]>(FILTERS[0]);
+  const [posts, setPosts] = useState<PostItem[]>([]);
+  const [period, setPeriod] = useState<(typeof PERIODS)[number]>(PERIODS[0]);
+  const [popular, setPopular] = useState<PopularPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [error, setError] = useState('');
 
-  const popular = [...posts].sort((a, b) => b.likeCount - a.likeCount).slice(0, 2);
+  useEffect(() => {
+    fetchTopics().then(({ data }) => {
+      if (data) {
+        setTopics(data);
+        setTopicId((current) => current ?? data[0]?.id);
+      }
+    });
+  }, []);
+
+  // 화면으로 돌아올 때마다(글쓰기 후 등) 다시 불러온다
+  // 지금 고른 게시판·필터 조건
+  const listFilter = {
+    topicId,
+    mbti: filter === '내 MBTI만' ? profile?.mbti : undefined,
+    ilju: filter === '내 일주만' ? profile?.ilju : undefined,
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!topicId) return;
+      let active = true;
+      setLoading(true);
+      fetchPosts({
+        topicId,
+        mbti: filter === '내 MBTI만' ? profile?.mbti : undefined,
+        ilju: filter === '내 일주만' ? profile?.ilju : undefined,
+      }).then(({ data, error: err }) => {
+        if (!active) return;
+        setPosts(data ?? []);
+        setHasMore((data?.length ?? 0) === POSTS_PAGE_SIZE); // 가득 찼으면 더 있을 수 있다
+        setError(err ?? '');
+        setLoading(false);
+      });
+      return () => {
+        active = false;
+      };
+    }, [topicId, filter, profile?.mbti, profile?.ilju]),
+  );
+
+  // "더 보기": 지금 보이는 가장 오래된 글보다 더 오래된 글을 이어서 불러온다
+  const loadMore = async () => {
+    const last = posts[posts.length - 1];
+    if (!last || loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    const { data, error: err } = await fetchPosts({ ...listFilter, before: last.createdAt });
+    setLoadingMore(false);
+    if (err || !data) {
+      setError(err ?? '');
+      return;
+    }
+    setPosts((current) => appendUnique(current, data));
+    setHasMore(data.length === POSTS_PAGE_SIZE);
+  };
+
+  // 인기글은 앱에서 정렬하지 않고 DB 함수가 "이 게시판의 전체 글" 중에서 좋아요 순으로 골라 준다
+  useFocusEffect(
+    useCallback(() => {
+      if (!topicId) return;
+      let active = true;
+      fetchPopularPosts({ topicId, days: period === '이번 주' ? WEEK_DAYS : undefined, limit: 2 }).then(({ data }) => {
+        if (active) setPopular(data ?? []);
+      });
+      return () => {
+        active = false;
+      };
+    }, [topicId, period]),
+  );
+
+  const openPost = (id: string) => router.push({ pathname: '/post/[id]', params: { id } });
+
+  const popularBlock = (
+    <View style={styles.popularSection}>
+      <View style={extra.popularHeader}>
+        <Text style={styles.popularLabel}>지금 인기있는 글</Text>
+        <View style={extra.periodRow}>
+          {PERIODS.map((item) => (
+            <Pressable key={item} onPress={() => setPeriod(item)} hitSlop={6}>
+              <Text style={[extra.periodLabel, period === item && extra.periodLabelActive]}>{item}</Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+      {popular.length > 0 ? (
+        <View style={[styles.popularRow, isWide && extra.popularColumn]}>
+          {popular.map((post, index) => (
+            <Pressable key={post.id} style={[styles.popularCard, isWide && extra.popularCardWide]} onPress={() => openPost(post.id)}>
+              <Text style={styles.popularRank}>{index + 1}위</Text>
+              <Text style={styles.popularTitle} numberOfLines={1}>
+                {post.title}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : (
+        <Text style={extra.popularEmpty}>
+          {period === '이번 주' ? '이번 주에는 아직 인기글이 없어요' : '아직 인기글이 없어요'}
+        </Text>
+      )}
+    </View>
+  );
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, isWide && extra.row]}>
+      <View style={extra.main}>
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
-        renderItem={({ item }) => (
-          <PostCard post={item} onPress={() => router.push({ pathname: '/post/[id]', params: { id: item.id } })} />
-        )}
+        renderItem={({ item }) => <PostCard post={item} onPress={() => openPost(item.id)} />}
+        ListEmptyComponent={
+          loading ? (
+            <ActivityIndicator style={extra.status} color={Colors.surfaceBorder} />
+          ) : (
+            <Text style={[extra.status, extra.statusText]}>
+              {error || '아직 글이 없어요. 첫 글을 남겨보세요'}
+            </Text>
+          )
+        }
+        ListFooterComponent={
+          hasMore ? (
+            <Pressable style={extra.moreButton} onPress={loadMore} disabled={loadingMore}>
+              <Text style={extra.moreLabel}>{loadingMore ? '불러오는 중…' : '더 보기'}</Text>
+            </Pressable>
+          ) : null
+        }
         ListHeaderComponent={
           <View>
             <View style={styles.headerRow}>
@@ -80,27 +219,12 @@ export default function Feed() {
               </View>
             </View>
 
-            <View style={styles.popularSection}>
-              <Text style={styles.popularLabel}>지금 인기있는 글</Text>
-              <View style={styles.popularRow}>
-                {popular.map((post, index) => (
-                  <Pressable
-                    key={post.id}
-                    style={styles.popularCard}
-                    onPress={() => router.push({ pathname: '/post/[id]', params: { id: post.id } })}>
-                    <Text style={styles.popularRank}>{index + 1}위</Text>
-                    <Text style={styles.popularTitle} numberOfLines={1}>
-                      {post.title}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            </View>
+            {isWide ? null : popularBlock}
 
             <View style={styles.topicRow}>
-              {TOPICS.map((item) => (
-                <Pressable key={item} onPress={() => setTopic(item)}>
-                  <Text style={[styles.topicLabel, topic === item && styles.topicLabelActive]}>{item}</Text>
+              {topics.map((item) => (
+                <Pressable key={item.id} onPress={() => setTopicId(item.id)}>
+                  <Text style={[styles.topicLabel, topicId === item.id && styles.topicLabelActive]}>{item.name}</Text>
                 </Pressable>
               ))}
             </View>
@@ -119,14 +243,41 @@ export default function Feed() {
         }
       />
 
-      <Pressable style={styles.fab} onPress={() => {}}>
+      <Pressable style={styles.fab} onPress={() => router.push('/post/new')}>
         <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
           <Path d="M12 5v14M5 12h14" stroke="#fff" strokeWidth={2.4} strokeLinecap="round" />
         </Svg>
       </Pressable>
+      </View>
+      {isWide && popularBlock ? <View style={extra.side}>{popularBlock}</View> : null}
     </View>
   );
 }
+
+const extra = StyleSheet.create({
+  moreButton: {
+    alignSelf: 'center',
+    borderWidth: 2,
+    borderColor: Colors.surfaceBorder,
+    borderRadius: Radius.pill,
+    paddingHorizontal: 22,
+    paddingVertical: 9,
+    marginTop: 4,
+  },
+  moreLabel: { fontSize: 14, color: Colors.text, fontWeight: '700' },
+  popularHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  periodRow: { flexDirection: 'row', gap: 12, paddingTop: 1 },
+  periodLabel: { fontSize: 12, color: Colors.textFaint },
+  periodLabelActive: { color: Colors.accent, fontWeight: '700' },
+  popularEmpty: { fontSize: 12, color: Colors.textFaint },
+  popularColumn: { flexDirection: 'column' },
+  popularCardWide: { flex: 0, alignSelf: 'stretch' },
+  row: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.four },
+  main: { flex: 1, maxWidth: 680, alignSelf: 'stretch' },
+  side: { width: 280, paddingTop: 72, paddingRight: Spacing.four },
+  status: { marginTop: 40 },
+  statusText: { textAlign: 'center', color: Colors.textFaint },
+});
 
 const styles = StyleSheet.create({
   screen: {
