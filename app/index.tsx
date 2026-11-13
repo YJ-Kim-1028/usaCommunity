@@ -1,2 +1,10 @@
-// TODO: Supabase 세션 확인 후 로그인 상태면 (tabs)로 바로 보내는 분기 추가
-export { default } from '@/features/auth/screens/Welcome';
+import { ScreenFrame } from '@/components/ScreenFrame';
+import Welcome from '@/features/auth/screens/Welcome';
+
+export default function Index() {
+  return (
+    <ScreenFrame maxWidth={480}>
+      <Welcome />
+    </ScreenFrame>
+  );
+}

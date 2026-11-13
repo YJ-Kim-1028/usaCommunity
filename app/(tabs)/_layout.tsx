@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
 import { Colors } from '@/constants/theme';
+import { useBreakpoint } from '@/hooks/useBreakpoint';
 
 function HomeIcon({ color }: { color: string }) {
   return (
@@ -44,13 +45,21 @@ function PersonIcon({ color }: { color: string }) {
 }
 
 export default function TabsLayout() {
+  const { isWide } = useBreakpoint();
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
+        // 넓은 화면(PC)에서는 아래 탭 대신 왼쪽 사이드바로 보여 준다
+        tabBarPosition: isWide ? 'left' : 'bottom',
         tabBarActiveTintColor: Colors.surfaceBorder,
         tabBarInactiveTintColor: Colors.textFaint,
-        tabBarStyle: { backgroundColor: Colors.background, borderTopColor: Colors.divider },
+        tabBarStyle: isWide
+          ? { backgroundColor: Colors.background, borderRightColor: Colors.divider, width: 200 }
+          : { backgroundColor: Colors.background, borderTopColor: Colors.divider },
+        tabBarLabelPosition: isWide ? 'beside-icon' : undefined,
+        tabBarActiveBackgroundColor: isWide ? Colors.accentSurface : undefined,
+        tabBarLabelStyle: isWide ? { fontSize: 14, marginLeft: 8 } : undefined,
       }}>
       <Tabs.Screen name="feed" options={{ title: '홈', tabBarIcon: ({ color }) => <HomeIcon color={String(color)} /> }} />
       <Tabs.Screen
