@@ -5,15 +5,26 @@ import Svg, { Path } from 'react-native-svg';
 
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { Colors, Radius, Spacing } from '@/constants/theme';
+import { signIn } from '@/features/auth/api';
 
 export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleLogin = () => {
-    // TODO: Supabase 연동 후 실제 로그인 API 호출로 교체
-    router.replace('/feed');
+  const handleLogin = async () => {
+    if (!email.trim() || !password) {
+      setError('이메일과 비밀번호를 입력해주세요');
+      return;
+    }
+    setError('');
+    setSubmitting(true);
+    const result = await signIn(email, password);
+    setSubmitting(false);
+    // 성공하면 세션이 생기면서 루트 레이아웃이 자동으로 피드로 보낸다
+    if (!result.ok) setError(result.message);
   };
 
   return (
@@ -54,9 +65,11 @@ export default function Login() {
         onChangeText={setPassword}
       />
 
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+
       <View style={styles.spacer} />
 
-      <PrimaryButton label="로그인" onPress={handleLogin} />
+      <PrimaryButton label={submitting ? '로그인 중…' : '로그인'} onPress={handleLogin} disabled={submitting} />
       <Pressable onPress={() => router.replace('/(auth)/step-1')} style={styles.signupLink}>
         <Text style={styles.signupText}>계정이 없으신가요? 회원가입</Text>
       </Pressable>
@@ -65,6 +78,11 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
+  error: {
+    color: Colors.accent,
+    marginTop: Spacing.three,
+    fontSize: 13,
+  },
   container: {
     flex: 1,
     backgroundColor: Colors.background,
