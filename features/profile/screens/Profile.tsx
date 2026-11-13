@@ -1,37 +1,59 @@
-import { useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
 import { Badge } from '@/components/Badge';
 import { Colors, Spacing } from '@/constants/theme';
-import { posts } from '@/features/feed/mockData';
+import { countMine, fetchMyComments, fetchMyPosts, type MyComment, type MyPost } from '@/features/profile/api';
+import { confirmAction } from '@/lib/dialog';
+import { useSession } from '@/lib/session';
+import { timeAgo } from '@/lib/time';
 
 const TABS = ['내가 쓴 글', '댓글'] as const;
 
-// TODO: Supabase 연동 후 실제 로그인 유저 프로필로 교체
-const mockUser = {
-  nickname: '달빛여행자',
-  mbti: 'INFP',
-  iljuLabel: '병오일주',
-  postCount: 12,
-  commentCount: 37,
-};
-
 export default function Profile() {
+  const router = useRouter();
+  const { session, profile, signOut } = useSession();
+  const userId = session?.user.id;
   const [tab, setTab] = useState<(typeof TABS)[number]>(TABS[0]);
+  const [myPosts, setMyPosts] = useState<MyPost[]>([]);
+  const [myComments, setMyComments] = useState<MyComment[]>([]);
+  const [counts, setCounts] = useState({ posts: 0, comments: 0 });
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!userId) return;
+      let active = true;
+      Promise.all([fetchMyPosts(userId), fetchMyComments(userId), countMine(userId)]).then(([p, c, n]) => {
+        if (!active) return;
+        setMyPosts(p.data ?? []);
+        setMyComments(c.data ?? []);
+        setCounts(n);
+      });
+      return () => {
+        active = false;
+      };
+    }, [userId]),
+  );
+
+  const handleSignOut = async () => {
+    if (await confirmAction('로그아웃', '로그아웃하시겠어요?', '로그아웃')) {
+      // 세션이 사라지면 루트 레이아웃이 랜딩 화면으로 보낸다
+      await signOut();
+    }
+  };
+
+  const openPost = (id: string | null) => {
+    if (id) router.push({ pathname: '/post/[id]', params: { id } });
+  };
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
-          <Circle cx={12} cy={12} r={3} stroke={Colors.surfaceBorder} strokeWidth={2} />
-          <Path
-            d="M12 3v2M12 19v2M4 12H2M22 12h-2M5.6 5.6 4.2 4.2M19.8 19.8l-1.4-1.4M5.6 18.4 4.2 19.8M19.8 4.2l-1.4 1.4"
-            stroke={Colors.surfaceBorder}
-            strokeWidth={2}
-            strokeLinecap="round"
-          />
-        </Svg>
+        <Pressable onPress={handleSignOut} hitSlop={12}>
+          <Text style={extra.signOut}>로그아웃</Text>
+        </Pressable>
       </View>
 
       <View style={styles.profileBlock}>
@@ -45,17 +67,17 @@ export default function Profile() {
             strokeLinecap="round"
           />
         </Svg>
-        <Text style={styles.nickname}>{mockUser.nickname}</Text>
+        <Text style={styles.nickname}>{profile?.nickname ?? ''}</Text>
         <View style={styles.badgeRow}>
-          <Badge label={mockUser.mbti} />
-          <Badge label={mockUser.iljuLabel} filled />
+          {profile ? <Badge label={profile.mbti} /> : null}
+          {profile ? <Badge label={`${profile.ilju}일주`} filled /> : null}
         </View>
         <View style={styles.statsRow}>
           <Text style={styles.statText}>
-            게시글 <Text style={styles.statValue}>{mockUser.postCount}</Text>
+            게시글 <Text style={styles.statValue}>{counts.posts}</Text>
           </Text>
           <Text style={styles.statText}>
-            댓글 <Text style={styles.statValue}>{mockUser.commentCount}</Text>
+            댓글 <Text style={styles.statValue}>{counts.comments}</Text>
           </Text>
         </View>
       </View>
@@ -70,23 +92,36 @@ export default function Profile() {
 
       {tab === '내가 쓴 글' ? (
         <View style={styles.list}>
-          {posts.map((post) => (
-            <View key={post.id} style={styles.listItem}>
+          {myPosts.map((post) => (
+            <Pressable key={post.id} style={styles.listItem} onPress={() => openPost(post.id)}>
               <Text style={styles.itemTitle}>{post.title}</Text>
               <Text style={styles.itemMeta}>
-                자유 · {post.timeAgo} · 댓글 {post.commentCount}
+                {timeAgo(post.createdAt)} · 좋아요 {post.likeCount} · 댓글 {post.commentCount}
               </Text>
-            </View>
+            </Pressable>
           ))}
+          {myPosts.length === 0 ? <Text style={styles.itemMeta}>아직 작성한 글이 없어요</Text> : null}
         </View>
       ) : (
         <View style={styles.list}>
-          <Text style={styles.itemMeta}>아직 작성한 댓글이 없어요</Text>
+          {myComments.map((comment) => (
+            <Pressable key={comment.id} style={styles.listItem} onPress={() => openPost(comment.postId)}>
+              <Text style={styles.itemTitle}>{comment.body}</Text>
+              <Text style={styles.itemMeta}>
+                {comment.postTitle ?? '삭제된 글'} · {timeAgo(comment.createdAt)}
+              </Text>
+            </Pressable>
+          ))}
+          {myComments.length === 0 ? <Text style={styles.itemMeta}>아직 작성한 댓글이 없어요</Text> : null}
         </View>
       )}
     </ScrollView>
   );
 }
+
+const extra = StyleSheet.create({
+  signOut: { color: Colors.textMuted, fontSize: 13 },
+});
 
 const styles = StyleSheet.create({
   screen: {
