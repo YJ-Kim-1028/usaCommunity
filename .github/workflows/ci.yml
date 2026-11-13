@@ -1,0 +1,31 @@
+# CI: 코드를 올릴 때마다 자동으로 타입 검사와 테스트를 실행한다.
+# 서버(Supabase)에 접속하지 않는 검사만 하므로 키(.env)가 필요 없다.
+
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 내려받기
+        uses: actions/checkout@v4
+
+      - name: Node.js 설치
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: 패키지 설치
+        run: npm ci
+
+      - name: 타입 검사
+        run: npx tsc --noEmit
+
+      - name: 테스트
+        run: npm test
