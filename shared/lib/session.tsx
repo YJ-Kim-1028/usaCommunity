@@ -1,6 +1,7 @@
 import type { Session } from '@supabase/supabase-js';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
+import { syncColorModeOnLogin } from '@/lib/colorModeSync';
 import { supabase } from '@/lib/supabase';
 
 export type MyProfile = {
@@ -8,6 +9,7 @@ export type MyProfile = {
   nickname: string;
   mbti: string;
   ilju: string;
+  photoUrl: string | null;
 };
 
 type SessionContextValue = {
@@ -25,14 +27,15 @@ const SessionContext = createContext<SessionContextValue | null>(null);
 async function loadProfile(userId: string): Promise<MyProfile | null> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, nickname, mbti, ilju')
+    .select('id, nickname, mbti, ilju, photo_url')
     .eq('id', userId)
     .maybeSingle();
   if (error) {
     console.warn('프로필을 불러오지 못했어요', error.message);
     return null;
   }
-  return data;
+  if (!data) return null;
+  return { id: data.id, nickname: data.nickname, mbti: data.mbti, ilju: data.ilju, photoUrl: data.photo_url ?? null };
 }
 
 export function SessionProvider({ children }: { children: ReactNode }) {
@@ -69,6 +72,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     loadProfile(userId).then((p) => {
       if (active) setProfile(p);
     });
+    // 화면 모드(밝게/어둡게)를 계정에 저장된 값과 맞춘다(실패해도 앱은 계속 동작)
+    syncColorModeOnLogin(userId);
     return () => {
       active = false;
     };

@@ -1,3 +1,4 @@
+import { friendlyDbError } from '@/lib/dbError';
 import { supabase } from '@/lib/supabase';
 
 // 프로필 화면이 쓰는 API.
@@ -72,4 +73,20 @@ export async function countMine(userId: string): Promise<{ posts: number; commen
     supabase.from('comments').select('id', { count: 'exact', head: true }).eq('author_id', userId),
   ]);
   return { posts: p.count ?? 0, comments: c.count ?? 0 };
+}
+
+/** 내 닉네임·MBTI를 고친다. 본인 행만 고칠 수 있다(RLS: users can update their own profile) */
+export async function updateMyProfile(
+  userId: string,
+  input: { nickname: string; mbti: string },
+): Promise<ProfileApiResult<true>> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({ nickname: input.nickname.trim(), mbti: input.mbti })
+    .eq('id', userId)
+    .select('id');
+  const failed = '정보를 저장하지 못했어요. 잠시 후 다시 시도해주세요';
+  if (error) return fail(friendlyDbError(error, failed));
+  if (!data || data.length !== 1) return fail(failed);
+  return { data: true, error: null };
 }
