@@ -5,14 +5,8 @@ import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-na
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { StepHeader } from '@/components/StepHeader';
 import { Colors, Radius, Spacing } from '@/constants/theme';
+import { MBTI_TYPES } from '@/constants/mbti';
 import { useOnboarding } from '@/features/auth/hooks/useOnboarding';
-
-const MBTI_TYPES = [
-  'INTJ', 'INTP', 'ENTJ', 'ENTP',
-  'INFJ', 'INFP', 'ENFJ', 'ENFP',
-  'ISTJ', 'ISFJ', 'ESTJ', 'ESFJ',
-  'ISTP', 'ISFP', 'ESTP', 'ESFP',
-];
 
 export default function Step3Mbti() {
   const router = useRouter();
@@ -68,8 +62,9 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   title: {
-    fontSize: 26,
-    fontWeight: '700',
+    fontSize: 28,
+    fontWeight: '800',
+    letterSpacing: -0.4,
     color: Colors.text,
     marginTop: Spacing.three,
   },
@@ -90,11 +85,12 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.two,
   },
   cell: {
-    width: '47%',
-    minHeight: 56,
-    borderWidth: 2,
-    borderColor: '#ccc4b3',
-    borderRadius: Radius.medium,
+    width: '48.5%',
+    minHeight: 60,
+    backgroundColor: Colors.card,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -107,11 +103,11 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
   },
   cellLabelSelected: {
-    color: '#ffffff',
+    color: Colors.onInk,
     fontWeight: '700',
   },
   error: {
-    color: Colors.accent,
+    color: Colors.danger,
     fontSize: 13,
   },
 });
