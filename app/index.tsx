@@ -1,10 +1,10 @@
-import { ScreenFrame } from '@/components/ScreenFrame';
+import { AuthShell } from '@/components/AuthShell';
 import Welcome from '@/features/auth/screens/Welcome';
 
 export default function Index() {
   return (
-    <ScreenFrame maxWidth={480}>
+    <AuthShell>
       <Welcome />
-    </ScreenFrame>
+    </AuthShell>
   );
 }

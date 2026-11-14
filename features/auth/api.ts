@@ -1,3 +1,4 @@
+import { uploadAvatar } from '@/lib/avatar';
 import { supabase } from '@/lib/supabase';
 
 import type { OnboardingData } from './hooks/useOnboarding';
@@ -66,6 +67,9 @@ export async function signUp(data: OnboardingData, ilju: string): Promise<AuthRe
     birth_time: birthTime,
   });
   if (privateError) return { ok: false, message: '프로필을 저장하지 못했어요. 같은 정보로 다시 시도해주세요' };
+
+  // 가입 화면에서 고른 사진이 있으면 올린다. 실패해도 가입은 성공으로 두고, 나중에 정보 수정에서 올릴 수 있다.
+  if (data.photoUri) await uploadAvatar(userId, data.photoUri);
 
   return { ok: true, needsEmailConfirm: false };
 }

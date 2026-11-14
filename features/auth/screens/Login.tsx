@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { PrimaryButton } from '@/components/PrimaryButton';
-import { Colors, Radius, Spacing } from '@/constants/theme';
+import { Colors, Radius, Spacing, Shadow } from '@/constants/theme';
 import { signIn } from '@/features/auth/api';
 
 export default function Login() {
@@ -79,7 +79,7 @@ export default function Login() {
 
 const styles = StyleSheet.create({
   error: {
-    color: Colors.accent,
+    color: Colors.danger,
     marginTop: Spacing.three,
     fontSize: 13,
   },
@@ -90,11 +90,19 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.five,
   },
   back: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: Shadow.card,
     marginBottom: Spacing.three,
   },
   title: {
-    fontSize: 26,
-    fontWeight: '700',
+    fontSize: 28,
+    fontWeight: '800',
+    letterSpacing: -0.4,
     color: Colors.text,
     marginBottom: 4,
   },
@@ -109,12 +117,14 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   fieldBox: {
-    borderWidth: 2,
-    borderColor: Colors.surfaceBorder,
-    borderRadius: Radius.medium,
-    paddingHorizontal: 14,
-    paddingVertical: 13,
-    fontSize: 14,
+    backgroundColor: Colors.card,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 15,
+    ...({ outlineStyle: 'none' } as any),
     color: Colors.text,
     minHeight: 48,
     marginBottom: Spacing.three,

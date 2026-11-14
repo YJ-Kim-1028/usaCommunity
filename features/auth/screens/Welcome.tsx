@@ -3,17 +3,25 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Badge } from '@/components/Badge';
 import { PrimaryButton } from '@/components/PrimaryButton';
-import { Colors, Radius, Spacing } from '@/constants/theme';
+import { Colors, Radius, Shadow, Spacing } from '@/constants/theme';
 
 export default function Welcome() {
   const router = useRouter();
 
   return (
     <View style={styles.container}>
+      {/* 배경을 꾸미는 부드러운 원 */}
+      <View style={styles.decoA} />
+      <View style={styles.decoB} />
+      <View style={styles.decoC} />
+
       <View style={styles.spacer} />
 
-      <Text style={styles.wordmark}>유사과학</Text>
-      <Text style={styles.subtitle}>가제 · MBTI × 일주로 만나는{'\n'}나와 닮은 사람들</Text>
+      <View style={styles.logoMark}>
+        <Text style={styles.logoMarkText}>아</Text>
+      </View>
+      <Text style={styles.wordmark}>아브라카다브라</Text>
+      <Text style={styles.subtitle}>MBTI × 일주로 만나는{'\n'}나와 닮은 사람들</Text>
 
       <View style={styles.badgeRow}>
         <Badge label="INFP" />
@@ -25,7 +33,9 @@ export default function Welcome() {
 
       <View style={styles.buttons}>
         <PrimaryButton label="회원가입" onPress={() => router.push('/(auth)/step-1')} />
-        <Pressable style={styles.secondaryButton} onPress={() => router.push('/(auth)/login')}>
+        <Pressable
+          style={({ hovered }: any) => [styles.secondaryButton, hovered && styles.secondaryHover]}
+          onPress={() => router.push('/(auth)/login')}>
           <Text style={styles.secondaryLabel}>로그인</Text>
         </Pressable>
       </View>
@@ -40,22 +50,39 @@ const styles = StyleSheet.create({
     padding: Spacing.four,
     paddingTop: Spacing.six,
     paddingBottom: Spacing.five,
+    overflow: 'hidden',
   },
+  decoA: { position: 'absolute', top: -80, right: -70, width: 260, height: 260, borderRadius: 130, backgroundColor: Colors.lavender },
+  decoB: { position: 'absolute', top: 120, left: -90, width: 200, height: 200, borderRadius: 100, backgroundColor: Colors.pink, opacity: 0.8 },
+  decoC: { position: 'absolute', bottom: 150, right: -60, width: 170, height: 170, borderRadius: 85, backgroundColor: Colors.sky, opacity: 0.9 },
   spacer: {
     flex: 1,
   },
+  logoMark: {
+    alignSelf: 'center',
+    width: 76,
+    height: 76,
+    borderRadius: 24,
+    backgroundColor: Colors.surfaceBorder,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    boxShadow: Shadow.cardHover,
+  },
+  logoMarkText: { color: Colors.onInk, fontSize: 36, fontWeight: '800' },
   wordmark: {
     fontSize: 34,
-    fontWeight: '700',
+    fontWeight: '800',
     color: Colors.text,
     textAlign: 'center',
     marginBottom: 12,
+    letterSpacing: -0.6,
   },
   subtitle: {
-    fontSize: 15,
-    color: Colors.textFaint,
+    fontSize: 16,
+    color: Colors.textMuted,
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 24,
     marginBottom: Spacing.four,
   },
   badgeRow: {
@@ -67,14 +94,15 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   secondaryButton: {
-    borderWidth: 2,
-    borderColor: Colors.surfaceBorder,
-    borderRadius: Radius.medium,
+    backgroundColor: Colors.card,
+    borderRadius: Radius.pill,
     paddingVertical: 16,
     alignItems: 'center',
-    minHeight: 52,
+    minHeight: 54,
     justifyContent: 'center',
+    boxShadow: Shadow.card,
   },
+  secondaryHover: { boxShadow: Shadow.cardHover },
   secondaryLabel: {
     fontSize: 16,
     fontWeight: '700',

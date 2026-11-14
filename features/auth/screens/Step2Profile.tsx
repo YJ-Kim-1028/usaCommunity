@@ -75,7 +75,7 @@ export default function Step2Profile() {
           )}
           <View style={styles.plusBadge}>
             <Svg width={14} height={14} viewBox="0 0 24 24" fill="none">
-              <Path d="M12 5v14M5 12h14" stroke="#fff" strokeWidth={2.4} strokeLinecap="round" />
+              <Path d="M12 5v14M5 12h14" stroke={Colors.onInk} strokeWidth={2.4} strokeLinecap="round" />
             </Svg>
           </View>
         </View>
@@ -179,8 +179,9 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   title: {
-    fontSize: 26,
-    fontWeight: '700',
+    fontSize: 28,
+    fontWeight: '800',
+    letterSpacing: -0.4,
     color: Colors.text,
     marginTop: Spacing.three,
   },
@@ -227,12 +228,14 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
   },
   fieldBox: {
-    borderWidth: 2,
-    borderColor: Colors.surfaceBorder,
-    borderRadius: Radius.medium,
-    paddingHorizontal: 14,
-    paddingVertical: 13,
-    fontSize: 14,
+    backgroundColor: Colors.card,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 15,
+    ...({ outlineStyle: 'none' } as any),
     color: Colors.text,
     minHeight: 48,
     // 웹에서 입력칸이 기본 너비(글자 수 기준)를 고집해 좁은 화면에서 줄이 넘치는 것을 막는다
@@ -254,10 +257,11 @@ const styles = StyleSheet.create({
   },
   genderOption: {
     flex: 1,
-    borderWidth: 2,
-    borderColor: Colors.surfaceBorder,
-    borderRadius: Radius.medium,
-    paddingVertical: 13,
+    backgroundColor: Colors.card,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: Radius.pill,
+    paddingVertical: 14,
     alignItems: 'center',
   },
   genderSelected: {
@@ -268,7 +272,7 @@ const styles = StyleSheet.create({
     color: Colors.text,
   },
   genderLabelSelected: {
-    color: '#ffffff',
+    color: Colors.onInk,
   },
   required: {
     color: Colors.textFaint,
@@ -280,7 +284,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.two,
   },
   error: {
-    color: Colors.accent,
+    color: Colors.danger,
     fontSize: 13,
   },
 });

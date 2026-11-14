@@ -6,7 +6,7 @@ import Svg, { Circle, Path } from 'react-native-svg';
 import { Badge } from '@/components/Badge';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { StepHeader } from '@/components/StepHeader';
-import { Colors, Spacing } from '@/constants/theme';
+import { Colors, Shadow, Spacing } from '@/constants/theme';
 import { signUp } from '@/features/auth/api';
 import { useOnboarding } from '@/features/auth/hooks/useOnboarding';
 import { calcDayPillar } from '@/features/auth/ilju';
@@ -90,7 +90,7 @@ export default function Step4Result() {
 
 const styles = StyleSheet.create({
   error: {
-    color: Colors.accent,
+    color: Colors.danger,
     fontSize: 13,
     textAlign: 'center',
     marginBottom: Spacing.three,
@@ -102,8 +102,9 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.five,
   },
   title: {
-    fontSize: 26,
-    fontWeight: '700',
+    fontSize: 28,
+    fontWeight: '800',
+    letterSpacing: -0.4,
     color: Colors.text,
     marginTop: Spacing.three,
     marginBottom: 4,
@@ -116,10 +117,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   card: {
-    borderWidth: 2,
-    borderColor: Colors.surfaceBorder,
-    borderRadius: 16,
-    paddingVertical: 32,
+    backgroundColor: Colors.card,
+    borderRadius: 28,
+    boxShadow: Shadow.card,
+    paddingVertical: 36,
     paddingHorizontal: 20,
     alignItems: 'center',
   },

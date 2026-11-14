@@ -1,14 +1,14 @@
 import { Stack } from 'expo-router';
 
-import { ScreenFrame } from '@/components/ScreenFrame';
+import { AuthShell } from '@/components/AuthShell';
 import { OnboardingProvider } from '@/features/auth/hooks/useOnboarding';
 
 export default function AuthLayout() {
   return (
     <OnboardingProvider>
-      <ScreenFrame maxWidth={480}>
+      <AuthShell>
         <Stack screenOptions={{ headerShown: false }} />
-      </ScreenFrame>
+      </AuthShell>
     </OnboardingProvider>
   );
 }
