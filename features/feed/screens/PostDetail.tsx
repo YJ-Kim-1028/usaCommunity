@@ -5,7 +5,9 @@ import Svg, { Path } from 'react-native-svg';
 
 import { Avatar } from '@/components/Avatar';
 import { Badge } from '@/components/Badge';
-import { Colors, Radius, Spacing } from '@/constants/theme';
+import { PageHeader } from '@/components/PageHeader';
+import { ScreenFrame } from '@/components/ScreenFrame';
+import { Colors, Radius, Shadow, Spacing } from '@/constants/theme';
 import {
   createComment,
   deletePost,
@@ -20,6 +22,22 @@ import {
 import { confirmAction, notify } from '@/lib/dialog';
 import { useSession } from '@/lib/session';
 import { timeAgo, tintIndexOf } from '@/lib/time';
+
+const NO_OUTLINE = { outlineStyle: 'none' } as any;
+const COMMENT_MAX = 500; // DB 제한(comments_body_length)과 같은 값
+
+function HeartIcon({ color, filled }: { color: string; filled: boolean }) {
+  return (
+    <Svg width={18} height={18} viewBox="0 0 24 24" fill={filled ? color : 'none'}>
+      <Path
+        d="M12 20s-7-4.6-9.5-9C1 8 2 4.5 6 4c2.3-.3 4 1 6 3 2-2 3.7-3.3 6-3 4 .5 5 4 3.5 7-2.5 4.4-9.5 9-9.5 9Z"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
 
 export default function PostDetail() {
   const router = useRouter();
@@ -126,245 +144,187 @@ export default function PostDetail() {
 
   return (
     <View style={styles.screen}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
-          <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
-            <Path
-              d="M15 5l-7 7 7 7"
-              stroke={Colors.surfaceBorder}
-              strokeWidth={2.2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </Svg>
-        </Pressable>
-        <Text style={styles.headerTitle}>게시글</Text>
-        {isMine ? (
-          <Pressable onPress={handleDelete} hitSlop={12}>
-            <Text style={extra.headerAction}>삭제</Text>
-          </Pressable>
-        ) : (
-          <Pressable onPress={handleReport} hitSlop={12}>
-            <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
-              <Path d="M5 3v18" stroke={Colors.surfaceBorder} strokeWidth={2} strokeLinecap="round" />
-              <Path d="M5 4h11l-2 3.5L16 11H5" stroke={Colors.surfaceBorder} strokeWidth={2} strokeLinejoin="round" />
-            </Svg>
-          </Pressable>
-        )}
-      </View>
+      <ScreenFrame maxWidth={760}>
+        <PageHeader
+          title="게시글"
+          onBack={() => router.back()}
+          right={
+            isMine ? (
+              <Pressable onPress={handleDelete} hitSlop={12}>
+                <Text style={extra.headerAction}>삭제</Text>
+              </Pressable>
+            ) : (
+              <Pressable onPress={handleReport} hitSlop={12} accessibilityLabel="신고">
+                <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+                  <Path d="M5 3v18" stroke={Colors.textMuted} strokeWidth={2} strokeLinecap="round" />
+                  <Path d="M5 4h11l-2 3.5L16 11H5" stroke={Colors.textMuted} strokeWidth={2} strokeLinejoin="round" />
+                </Svg>
+              </Pressable>
+            )
+          }
+        />
 
-      <ScrollView contentContainerStyle={styles.body}>
-        <View style={styles.authorRow}>
-          <Avatar initial={post.author.nickname[0] ?? '?'} tintIndex={tintIndexOf(post.author.nickname)} size={30} />
-          <View style={styles.flex1}>
-            <Text style={styles.authorName}>{post.author.nickname}</Text>
-            <View style={styles.authorMetaRow}>
-              <Badge label={post.author.mbti} />
-              <Badge label={`${post.author.ilju}일주`} />
-              <Text style={styles.timeAgo}>{timeAgo(post.createdAt)}</Text>
-            </View>
-          </View>
-        </View>
-
-        <Text style={styles.title}>{post.title}</Text>
-        <Text style={styles.content}>{post.body}</Text>
-
-        <View style={styles.statsRow}>
-          <Pressable onPress={handleLike} hitSlop={8}>
-            <Text style={[styles.statText, liked && extra.liked]}>
-              {liked ? '♥' : '♡'} 좋아요 {post.likeCount}
-            </Text>
-          </Pressable>
-          <Text style={styles.statText}>댓글 {comments.length}</Text>
-        </View>
-
-        <View style={styles.commentList}>
-          {ordered.map(({ item, depth }) => (
-            <View key={item.id} style={[styles.commentRow, depth === 1 && styles.commentReply]}>
-              <Avatar initial={item.author.nickname[0] ?? '?'} tintIndex={tintIndexOf(item.author.nickname)} size={26} />
+        <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
+          <View style={styles.postCard}>
+            <View style={styles.authorRow}>
+              <Avatar initial={post.author.nickname[0] ?? '?'} tintIndex={tintIndexOf(post.author.nickname)} size={40} photoUrl={post.author.photoUrl} />
               <View style={styles.flex1}>
-                <View style={styles.commentAuthorRow}>
-                  <Text style={styles.commentAuthor}>{item.author.nickname}</Text>
-                  <Badge label={item.author.mbti} />
-                  <Text style={styles.timeAgo}>{timeAgo(item.createdAt)}</Text>
-                </View>
-                <Text style={styles.commentBody}>{item.body}</Text>
-                {depth === 0 ? (
-                  <Pressable onPress={() => setReplyTo(item)} hitSlop={6}>
-                    <Text style={extra.replyLink}>답글</Text>
-                  </Pressable>
-                ) : null}
+                <Text style={styles.authorName}>{post.author.nickname}</Text>
+                <Text style={styles.timeAgo}>{timeAgo(post.createdAt)}</Text>
+              </View>
+              <View style={styles.badges}>
+                <Badge label={post.author.mbti} />
+                <Badge label={`${post.author.ilju}일주`} />
               </View>
             </View>
-          ))}
-          {ordered.length === 0 ? <Text style={styles.emptyText}>첫 댓글을 남겨보세요</Text> : null}
-        </View>
-      </ScrollView>
 
-      {replyTo ? (
-        <Pressable style={extra.replyBar} onPress={() => setReplyTo(null)}>
-          <Text style={extra.replyBarText}>{replyTo.author.nickname}님에게 답글 · 누르면 취소</Text>
-        </Pressable>
-      ) : null}
-      <View style={styles.commentInputRow}>
-        <TextInput
-          style={styles.commentInput}
-          placeholder="댓글을 남겨보세요"
-          placeholderTextColor={Colors.placeholder}
-          value={commentDraft}
-          onChangeText={setCommentDraft}
-          onSubmitEditing={handleSend}
-        />
-        <Pressable style={styles.sendButton} onPress={handleSend} disabled={sending}>
-          <Text style={styles.sendLabel}>{sending ? '…' : '전송'}</Text>
-        </Pressable>
-      </View>
+            <Text style={styles.title}>{post.title}</Text>
+            <Text style={styles.content}>{post.body}</Text>
+
+            <View style={styles.actionRow}>
+              <Pressable
+                onPress={handleLike}
+                hitSlop={6}
+                style={({ hovered }: any) => [styles.pill, liked && styles.pillLiked, hovered && styles.pillHover]}>
+                <HeartIcon color={liked ? Colors.accent : Colors.textMuted} filled={liked} />
+                <Text style={[styles.pillText, liked && styles.pillTextLiked]}>좋아요 {post.likeCount}</Text>
+              </Pressable>
+              <View style={styles.pill}>
+                <Svg width={17} height={17} viewBox="0 0 24 24" fill="none">
+                  <Path d="M4 5h16v11H9l-4 4V5Z" stroke={Colors.textMuted} strokeWidth={2} strokeLinejoin="round" />
+                </Svg>
+                <Text style={styles.pillText}>댓글 {comments.length}</Text>
+              </View>
+            </View>
+          </View>
+
+          <Text style={styles.commentsTitle}>댓글 {comments.length}</Text>
+          <View style={styles.commentList}>
+            {ordered.map(({ item, depth }) => (
+              <View key={item.id} style={[styles.commentRow, depth === 1 && styles.commentReply]}>
+                <Avatar initial={item.author.nickname[0] ?? '?'} tintIndex={tintIndexOf(item.author.nickname)} size={32} photoUrl={item.author.photoUrl} />
+                <View style={styles.commentBubble}>
+                  <View style={styles.commentAuthorRow}>
+                    <Text style={styles.commentAuthor}>{item.author.nickname}</Text>
+                    <Badge label={item.author.mbti} />
+                    <Text style={styles.timeAgo}>{timeAgo(item.createdAt)}</Text>
+                  </View>
+                  <Text style={styles.commentBody}>{item.body}</Text>
+                  {depth === 0 ? (
+                    <Pressable onPress={() => setReplyTo(item)} hitSlop={6}>
+                      <Text style={extra.replyLink}>답글 달기</Text>
+                    </Pressable>
+                  ) : null}
+                </View>
+              </View>
+            ))}
+            {ordered.length === 0 ? <Text style={styles.emptyComments}>첫 댓글을 남겨보세요</Text> : null}
+          </View>
+        </ScrollView>
+
+        {replyTo ? (
+          <Pressable style={extra.replyBar} onPress={() => setReplyTo(null)}>
+            <Text style={extra.replyBarText}>{replyTo.author.nickname}님에게 답글 · 누르면 취소</Text>
+          </Pressable>
+        ) : null}
+        <View style={styles.commentInputRow}>
+          <TextInput
+            style={[styles.commentInput, NO_OUTLINE]}
+            placeholder="댓글을 남겨보세요"
+            maxLength={COMMENT_MAX}
+            placeholderTextColor={Colors.placeholder}
+            value={commentDraft}
+            onChangeText={setCommentDraft}
+            onSubmitEditing={handleSend}
+          />
+          <Pressable style={[styles.sendButton, !commentDraft.trim() && styles.sendDisabled]} onPress={handleSend} disabled={sending}>
+            <Text style={styles.sendLabel}>{sending ? '…' : '전송'}</Text>
+          </Pressable>
+        </View>
+      </ScreenFrame>
     </View>
   );
 }
 
 const extra = StyleSheet.create({
   backLink: { marginTop: Spacing.three },
-  headerAction: { color: Colors.accent, fontSize: 14 },
-  liked: { color: Colors.accent },
-  replyLink: { color: Colors.textMuted, fontSize: 12, marginTop: 4 },
-  replyBar: { paddingHorizontal: Spacing.four, paddingVertical: 8, backgroundColor: Colors.background },
-  replyBarText: { color: Colors.textMuted, fontSize: 12 },
+  headerAction: { color: Colors.accent, fontSize: 14, fontWeight: '700' },
+  replyLink: { color: Colors.textMuted, fontSize: 12, marginTop: 6, fontWeight: '600' },
+  replyBar: { paddingHorizontal: Spacing.four, paddingVertical: 8, backgroundColor: Colors.accentSurface },
+  replyBarText: { color: Colors.accent, fontSize: 12, fontWeight: '600' },
 });
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: Colors.background,
+  screen: { flex: 1, backgroundColor: Colors.background },
+  emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.background },
+  emptyText: { color: Colors.textFaint },
+  body: { paddingHorizontal: 16, paddingBottom: 24, gap: 12 },
+  flex1: { flex: 1 },
+
+  postCard: {
+    backgroundColor: Colors.card,
+    borderRadius: 24,
+    padding: 22,
+    boxShadow: Shadow.card,
   },
-  emptyState: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.background,
-  },
-  emptyText: {
-    color: Colors.textFaint,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.five,
-    paddingBottom: Spacing.three,
-    borderBottomWidth: 2,
-    borderBottomColor: Colors.divider,
-  },
-  headerTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: Colors.text,
-  },
-  body: {
-    padding: Spacing.four,
-  },
-  authorRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 10,
-  },
-  flex1: {
-    flex: 1,
-  },
-  authorName: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: Colors.text,
-  },
-  authorMetaRow: {
+  authorRow: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 18 },
+  authorName: { fontSize: 15, fontWeight: '700', color: Colors.text },
+  badges: { flexDirection: 'row', gap: 6 },
+  timeAgo: { fontSize: 12, color: Colors.textFaint, marginTop: 1 },
+  title: { fontSize: 22, fontWeight: '800', color: Colors.text, marginBottom: 12, lineHeight: 30, letterSpacing: -0.3 },
+  content: { fontSize: 16, color: Colors.bodyText, lineHeight: 27, marginBottom: 22 },
+  actionRow: { flexDirection: 'row', gap: 8 },
+  pill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginTop: 2,
+    backgroundColor: Colors.background,
+    borderRadius: Radius.pill,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
   },
-  timeAgo: {
-    fontSize: 11,
-    color: Colors.textFaint,
+  pillLiked: { backgroundColor: Colors.accentSurface },
+  pillHover: { backgroundColor: Colors.hover },
+  pillText: { fontSize: 13, fontWeight: '600', color: Colors.textMuted },
+  pillTextLiked: { color: Colors.accent },
+
+  commentsTitle: { fontSize: 17, fontWeight: '800', color: Colors.text, marginTop: 12, paddingHorizontal: 4 },
+  commentList: { gap: 10 },
+  commentRow: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
+  commentReply: { paddingLeft: 40 },
+  commentBubble: {
+    flex: 1,
+    backgroundColor: Colors.card,
+    borderRadius: 18,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    boxShadow: Shadow.card,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.text,
-    marginBottom: 10,
-  },
-  content: {
-    fontSize: 14,
-    color: '#4a4a4a',
-    lineHeight: 21,
-    marginBottom: Spacing.three,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: 16,
-    paddingBottom: Spacing.three,
-    borderBottomWidth: 2,
-    borderBottomColor: Colors.divider,
-    marginBottom: Spacing.three,
-  },
-  statText: {
-    fontSize: 13,
-    color: Colors.textMuted,
-  },
-  commentList: {
-    gap: 14,
-  },
-  commentRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  commentReply: {
-    paddingLeft: 34,
-  },
-  commentAuthorRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 2,
-  },
-  commentAuthor: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: Colors.text,
-  },
-  commentBody: {
-    fontSize: 13,
-    color: '#4a4a4a',
-  },
+  commentAuthorRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
+  commentAuthor: { fontSize: 13, fontWeight: '700', color: Colors.text },
+  commentBody: { fontSize: 14, color: Colors.bodyText, lineHeight: 21 },
+  emptyComments: { color: Colors.textFaint, fontSize: 14, paddingHorizontal: 4 },
+
   commentInputRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    paddingHorizontal: Spacing.four,
-    paddingVertical: 14,
-    borderTopWidth: 2,
-    borderTopColor: Colors.divider,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: Colors.card,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
   },
   commentInput: {
     flex: 1,
-    borderWidth: 2,
-    borderColor: Colors.surfaceBorder,
-    borderRadius: Radius.pill,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    fontSize: 13,
-    color: Colors.text,
-  },
-  sendButton: {
-    backgroundColor: Colors.surfaceBorder,
+    backgroundColor: Colors.background,
     borderRadius: Radius.pill,
     paddingHorizontal: 18,
-    paddingVertical: 10,
+    paddingVertical: 12,
+    fontSize: 14,
+    color: Colors.text,
   },
-  sendLabel: {
-    color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '700',
-  },
+  sendButton: { backgroundColor: Colors.surfaceBorder, borderRadius: Radius.pill, paddingHorizontal: 20, paddingVertical: 12 },
+  sendDisabled: { opacity: 0.45 },
+  sendLabel: { color: Colors.onInk, fontSize: 14, fontWeight: '700' },
 });

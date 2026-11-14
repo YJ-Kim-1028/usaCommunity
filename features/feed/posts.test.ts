@@ -1,4 +1,4 @@
-import { appendUnique } from './posts';
+import { SEARCH_MIN_LENGTH, appendUnique, normalizeSearchQuery } from './posts';
 
 describe('appendUnique (더 보기로 불러온 글 이어 붙이기)', () => {
   it('새로 불러온 글을 뒤에 붙인다', () => {
@@ -27,5 +27,27 @@ describe('appendUnique (더 보기로 불러온 글 이어 붙이기)', () => {
     const current = [{ id: 'a' }];
     appendUnique(current, [{ id: 'b' }]);
     expect(current).toEqual([{ id: 'a' }]);
+  });
+});
+
+describe('normalizeSearchQuery (검색어 정리)', () => {
+  it('앞뒤 공백을 지운다', () => {
+    expect(normalizeSearchQuery('  새벽  ')).toBe('새벽');
+  });
+
+  it('안쪽의 연속 공백·줄바꿈은 공백 하나로 줄인다', () => {
+    expect(normalizeSearchQuery('새벽   눈이\n떠져요')).toBe('새벽 눈이 떠져요');
+  });
+
+  it('공백만 있으면 빈 글자가 된다', () => {
+    expect(normalizeSearchQuery('     ')).toBe('');
+  });
+
+  it('특수문자는 그대로 둔다(이스케이프는 DB 함수가 한다)', () => {
+    expect(normalizeSearchQuery("100%_a'b")).toBe("100%_a'b");
+  });
+
+  it('검색은 2글자부터 한다', () => {
+    expect(SEARCH_MIN_LENGTH).toBe(2);
   });
 });

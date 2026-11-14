@@ -6,3 +6,11 @@ export function appendUnique<T extends { id: string }>(current: T[], incoming: T
   const seen = new Set(current.map((item) => item.id));
   return [...current, ...incoming.filter((item) => !seen.has(item.id))];
 }
+
+/** 검색은 이 글자 수 이상일 때만 한다(DB 함수 search_posts의 규칙과 같다) */
+export const SEARCH_MIN_LENGTH = 2;
+
+/** 검색어를 정리한다: 앞뒤 공백을 지우고, 안쪽의 연속 공백은 하나로 줄인다 */
+export function normalizeSearchQuery(raw: string): string {
+  return raw.replace(/\s+/g, ' ').trim();
+}

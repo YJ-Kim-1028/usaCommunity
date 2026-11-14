@@ -1,3 +1,5 @@
+import { SEARCH_MIN_LENGTH, normalizeSearchQuery } from '@/features/feed/posts';
+import { friendlyDbError } from '@/lib/dbError';
 import { supabase } from '@/lib/supabase';
 
 // 모든 함수는 { data, error } 패턴으로 돌려준다. error는 화면에 보여 줄 수 있는 한국어 문장.
@@ -9,7 +11,7 @@ const GENERIC = '문제가 생겼어요. 잠시 후 다시 시도해주세요';
 
 export type Topic = { id: string; slug: string; name: string };
 
-export type Author = { id: string; nickname: string; mbti: string; ilju: string };
+export type Author = { id: string; nickname: string; mbti: string; ilju: string; photoUrl: string | null };
 
 export type PostItem = {
   id: string;
@@ -27,11 +29,15 @@ export type CommentItem = {
   body: string;
   createdAt: string;
   parentId: string | null;
-  author: { id: string; nickname: string; mbti: string };
+  author: { id: string; nickname: string; mbti: string; photoUrl: string | null };
 };
 
 const POST_SELECT =
-  'id, title, body, created_at, topic_id, author:profiles!posts_author_id_fkey!inner(id, nickname, mbti, ilju), likes(count), comments(count)';
+  'id, title, body, created_at, topic_id, author:profiles!posts_author_id_fkey!inner(id, nickname, mbti, ilju, photo_url), likes(count), comments(count)';
+
+function toAuthor(raw: any): Author {
+  return { id: raw.id, nickname: raw.nickname, mbti: raw.mbti, ilju: raw.ilju, photoUrl: raw.photo_url ?? null };
+}
 
 function toPost(row: any): PostItem {
   return {
@@ -40,7 +46,7 @@ function toPost(row: any): PostItem {
     body: row.body,
     createdAt: row.created_at,
     topicId: row.topic_id,
-    author: row.author,
+    author: toAuthor(row.author),
     likeCount: row.likes?.[0]?.count ?? 0,
     commentCount: row.comments?.[0]?.count ?? 0,
   };
@@ -112,7 +118,7 @@ export async function createPost(input: {
     .insert({ author_id: input.userId, topic_id: input.topicId, title: input.title.trim(), body: input.body.trim() })
     .select('id')
     .single();
-  if (error) return fail('글을 저장하지 못했어요. 잠시 후 다시 시도해주세요');
+  if (error) return fail(friendlyDbError(error, '글을 저장하지 못했어요. 잠시 후 다시 시도해주세요'));
   return { data: data.id, error: null };
 }
 
@@ -129,7 +135,7 @@ export async function deletePost(id: string): Promise<ApiResult<true>> {
 export async function fetchComments(postId: string): Promise<ApiResult<CommentItem[]>> {
   const { data, error } = await supabase
     .from('comments')
-    .select('id, body, created_at, parent_comment_id, author:profiles!comments_author_id_fkey(id, nickname, mbti)')
+    .select('id, body, created_at, parent_comment_id, author:profiles!comments_author_id_fkey(id, nickname, mbti, photo_url)')
     .eq('post_id', postId)
     .order('created_at', { ascending: true });
   if (error) return fail(GENERIC);
@@ -138,7 +144,7 @@ export async function fetchComments(postId: string): Promise<ApiResult<CommentIt
     body: row.body,
     createdAt: row.created_at,
     parentId: row.parent_comment_id,
-    author: row.author,
+    author: { id: row.author.id, nickname: row.author.nickname, mbti: row.author.mbti, photoUrl: row.author.photo_url ?? null },
   }));
   return { data: items, error: null };
 }
@@ -155,7 +161,7 @@ export async function createComment(input: {
     parent_comment_id: input.parentId ?? null,
     body: input.body.trim(),
   });
-  if (error) return fail('댓글을 저장하지 못했어요. 잠시 후 다시 시도해주세요');
+  if (error) return fail(friendlyDbError(error, '댓글을 저장하지 못했어요. 잠시 후 다시 시도해주세요'));
   return { data: true, error: null };
 }
 
@@ -174,6 +180,34 @@ export async function setLike(postId: string, userId: string, liked: boolean): P
 
 export async function reportPost(postId: string, reporterId: string, reason: string): Promise<ApiResult<true>> {
   const { error } = await supabase.from('reports').insert({ reporter_id: reporterId, post_id: postId, reason });
-  if (error) return fail('신고를 접수하지 못했어요. 잠시 후 다시 시도해주세요');
+  if (error) return fail(friendlyDbError(error, '신고를 접수하지 못했어요. 잠시 후 다시 시도해주세요'));
   return { data: true, error: null };
+}
+
+/**
+ * 글 검색(제목·본문). 검색어를 문자열로 이어 붙이지 않고 DB 함수(search_posts)에 매개변수로 넘긴다.
+ * 2글자 미만이면 서버에 묻지 않고 빈 결과를 돌려준다. before를 주면 그보다 오래된 글을 이어서 가져온다.
+ */
+export async function searchPosts(query: string, before?: string): Promise<ApiResult<PostItem[]>> {
+  const q = normalizeSearchQuery(query);
+  if (q.length < SEARCH_MIN_LENGTH) return { data: [], error: null };
+  const { data, error } = await supabase.rpc('search_posts', {
+    p_query: q,
+    p_limit: POSTS_PAGE_SIZE,
+    p_before: before ?? null,
+  });
+  if (error) return fail(GENERIC);
+  return {
+    data: (data ?? []).map((row: any) => ({
+      id: row.id,
+      title: row.title,
+      body: row.body,
+      createdAt: row.created_at,
+      topicId: row.topic_id,
+      author: { id: row.author_id, nickname: row.nickname, mbti: row.mbti, ilju: row.ilju, photoUrl: row.photo_url ?? null },
+      likeCount: Number(row.like_count),
+      commentCount: Number(row.comment_count),
+    })),
+    error: null,
+  };
 }

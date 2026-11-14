@@ -1,11 +1,10 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { Avatar } from '@/components/Avatar';
-import { Badge } from '@/components/Badge';
-import { Colors, Radius, Spacing } from '@/constants/theme';
+import { Colors, Radius, Shadow, Spacing } from '@/constants/theme';
 import {
   POSTS_PAGE_SIZE,
   fetchPopularPosts,
@@ -15,57 +14,31 @@ import {
   type PostItem,
   type Topic,
 } from '@/features/feed/api';
+import { HeartIcon, PostCard } from '@/features/feed/components/PostCard';
+import { SearchBox } from '@/features/feed/components/SearchBox';
 import { appendUnique } from '@/features/feed/posts';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { useSession } from '@/lib/session';
-import { timeAgo, tintIndexOf } from '@/lib/time';
+import { tintIndexOf } from '@/lib/time';
 
 const FILTERS = ['전체', '내 일주만', '내 MBTI만'] as const;
 const PERIODS = ['이번 주', '전체'] as const;
 const WEEK_DAYS = 7;
+const POPULAR_COUNT = 6;
 
-function PostCard({ post, onPress }: { post: PostItem; onPress: () => void }) {
-  return (
-    <Pressable style={styles.card} onPress={onPress}>
-      <View style={styles.cardHeader}>
-        <Avatar initial={post.author.nickname[0] ?? '?'} tintIndex={tintIndexOf(post.author.nickname)} />
-        <Text style={styles.authorName}>{post.author.nickname}</Text>
-        <Text style={styles.timeAgo}>· {timeAgo(post.createdAt)}</Text>
-      </View>
-      <View style={styles.badgeRow}>
-        <Badge label={post.author.mbti} />
-        <Badge label={`${post.author.ilju}일주`} />
-      </View>
-      <Text style={styles.postTitle}>{post.title}</Text>
-      <Text style={styles.postPreview} numberOfLines={2}>
-        {post.body}
-      </Text>
-      <View style={styles.statsRow}>
-        <View style={styles.statItem}>
-          <Svg width={15} height={15} viewBox="0 0 24 24" fill="none">
-            <Path
-              d="M12 20s-7-4.6-9.5-9C1 8 2 4.5 6 4c2.3-.3 4 1 6 3 2-2 3.7-3.3 6-3 4 .5 5 4 3.5 7-2.5 4.4-9.5 9-9.5 9Z"
-              stroke={Colors.textMuted}
-              strokeWidth={2}
-              strokeLinejoin="round"
-            />
-          </Svg>
-          <Text style={styles.statText}>{post.likeCount}</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Svg width={15} height={15} viewBox="0 0 24 24" fill="none">
-            <Path d="M4 5h16v11H9l-4 4V5Z" stroke={Colors.textMuted} strokeWidth={2} strokeLinejoin="round" />
-          </Svg>
-          <Text style={styles.statText}>{post.commentCount}</Text>
-        </View>
-      </View>
-    </Pressable>
-  );
-}
+// 게시판마다 배너 색과 한 줄 소개를 다르게 준다(slug 기준, 없는 게시판은 기본값)
+const TOPIC_LOOK: Record<string, { bg: string; deco: string; sub: string }> = {
+  free: { bg: Colors.lavender, deco: Colors.lavenderDeco, sub: '아무 이야기나 편하게 나눠요' },
+  love: { bg: Colors.pink, deco: Colors.pinkDeco, sub: '연애와 고민을 함께 나눠요' },
+  info: { bg: Colors.sky, deco: Colors.skyDeco, sub: '알아두면 좋은 이야기를 모아요' },
+  humor: { bg: Colors.yellow, deco: Colors.yellowDeco, sub: '웃음이 필요할 때 들러 보세요' },
+  entertainment: { bg: Colors.peach, deco: Colors.peachDeco, sub: '연예인과 TV 프로그램 이야기를 나눠요' },
+};
+const DEFAULT_LOOK = { bg: Colors.periwinkle, deco: Colors.periwinkleDeco, sub: 'MBTI와 일주로 나누는 이야기' };
 
 export default function Feed() {
   const router = useRouter();
-  const { isWide } = useBreakpoint();
+  const { width, nav } = useBreakpoint();
   const { profile } = useSession();
   const [topics, setTopics] = useState<Topic[]>([]);
   const [topicId, setTopicId] = useState<string | undefined>();
@@ -137,9 +110,11 @@ export default function Feed() {
     useCallback(() => {
       if (!topicId) return;
       let active = true;
-      fetchPopularPosts({ topicId, days: period === '이번 주' ? WEEK_DAYS : undefined, limit: 2 }).then(({ data }) => {
-        if (active) setPopular(data ?? []);
-      });
+      fetchPopularPosts({ topicId, days: period === '이번 주' ? WEEK_DAYS : undefined, limit: POPULAR_COUNT }).then(
+        ({ data }) => {
+          if (active) setPopular(data ?? []);
+        },
+      );
       return () => {
         active = false;
       };
@@ -147,297 +122,251 @@ export default function Feed() {
   );
 
   const openPost = (id: string) => router.push({ pathname: '/post/[id]', params: { id } });
+  const openWrite = () => router.push('/post/new');
 
-  const popularBlock = (
-    <View style={styles.popularSection}>
-      <View style={extra.popularHeader}>
-        <Text style={styles.popularLabel}>지금 인기있는 글</Text>
-        <View style={extra.periodRow}>
+  const topic = topics.find((item) => item.id === topicId);
+  const look = (topic && TOPIC_LOOK[topic.slug]) || DEFAULT_LOOK;
+  const pad = width >= RAIL_PAD_BREAKPOINT ? 28 : Spacing.three;
+
+  const header = (
+    <View>
+      {/* 좁은 화면에서는 아래 탭에 로고가 없어서 위쪽에 로고를 둔다(넓은 화면은 사이드바에 있음) */}
+      {nav === 'bottom' ? (
+        <View style={styles.headerRow}>
+          <Text style={styles.logo}>아브라카다브라</Text>
+        </View>
+      ) : null}
+
+      {/* 검색창: 여기서 입력하고 검색하면 결과 화면이 따로 열린다 */}
+      <SearchBox onSearch={(query) => router.push({ pathname: '/search', params: { q: query } })} />
+
+      {/* 게시판 소개 배너: 게시판마다 색이 다르다 */}
+      <View style={[styles.hero, { backgroundColor: look.bg }]}>
+        <View style={[styles.heroDecoA, { backgroundColor: look.deco }]} />
+        <View style={[styles.heroDecoB, { backgroundColor: look.deco }]} />
+        <Text style={styles.heroTitle}>{topic?.name ?? '게시판'}</Text>
+        <Text style={styles.heroSub}>{look.sub}</Text>
+      </View>
+
+      {/* 글쓰기 입구 */}
+      <Pressable
+        style={({ hovered }: any) => [styles.composer, hovered && styles.cardHover]}
+        onPress={openWrite}
+        accessibilityLabel="글쓰기">
+        <Avatar size={36} initial={profile?.nickname?.[0] ?? '?'} tintIndex={tintIndexOf(profile?.nickname ?? '')} photoUrl={profile?.photoUrl} />
+        <Text style={styles.composerHint}>어떤 이야기를 나눠 볼까요?</Text>
+        <View style={styles.composerButton}>
+          <Text style={styles.composerButtonLabel}>글쓰기</Text>
+        </View>
+      </Pressable>
+
+      {/* 지금 인기 있는 글: 가로로 넘겨 보는 카드 */}
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>지금 인기 있는 글</Text>
+        <View style={styles.periodRow}>
           {PERIODS.map((item) => (
-            <Pressable key={item} onPress={() => setPeriod(item)} hitSlop={6}>
-              <Text style={[extra.periodLabel, period === item && extra.periodLabelActive]}>{item}</Text>
+            <Pressable
+              key={item}
+              onPress={() => setPeriod(item)}
+              style={[styles.periodChip, period === item && styles.periodChipActive]}>
+              <Text style={[styles.periodLabel, period === item && styles.periodLabelActive]}>{item}</Text>
             </Pressable>
           ))}
         </View>
       </View>
       {popular.length > 0 ? (
-        <View style={[styles.popularRow, isWide && extra.popularColumn]}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={{ marginHorizontal: -pad }}
+          contentContainerStyle={[styles.trendingRow, { paddingHorizontal: pad }]}>
           {popular.map((post, index) => (
-            <Pressable key={post.id} style={[styles.popularCard, isWide && extra.popularCardWide]} onPress={() => openPost(post.id)}>
-              <Text style={styles.popularRank}>{index + 1}위</Text>
-              <Text style={styles.popularTitle} numberOfLines={1}>
+            <Pressable
+              key={post.id}
+              style={({ hovered }: any) => [styles.trendingCard, hovered && styles.cardHover]}
+              onPress={() => openPost(post.id)}>
+              <View style={styles.rankBadge}>
+                <Text style={styles.rankText}>{index + 1}</Text>
+              </View>
+              <Text style={styles.trendingTitle} numberOfLines={2}>
                 {post.title}
               </Text>
+              <View style={styles.statItem}>
+                <HeartIcon color={Colors.accent} size={14} />
+                <Text style={styles.trendingLikes}>{post.likeCount}</Text>
+              </View>
             </Pressable>
           ))}
-        </View>
+        </ScrollView>
       ) : (
-        <Text style={extra.popularEmpty}>
+        <Text style={styles.popularEmpty}>
           {period === '이번 주' ? '이번 주에는 아직 인기글이 없어요' : '아직 인기글이 없어요'}
         </Text>
       )}
+
+      {/* 게시판 고르기 */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.topicScroll} contentContainerStyle={styles.topicRow}>
+        {topics.map((item) => (
+          <Pressable
+            key={item.id}
+            onPress={() => setTopicId(item.id)}
+            style={[styles.topicPill, topicId === item.id && styles.topicPillActive]}>
+            <Text style={[styles.topicLabel, topicId === item.id && styles.topicLabelActive]}>{item.name}</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+
+      <View style={styles.filterRow}>
+        {FILTERS.map((item) => (
+          <Pressable key={item} onPress={() => setFilter(item)} style={styles.filterItem}>
+            <Text style={[styles.filterLabel, filter === item && styles.filterLabelActive]}>{item}</Text>
+            {filter === item ? <View style={styles.filterDot} /> : null}
+          </Pressable>
+        ))}
+      </View>
     </View>
   );
 
   return (
-    <View style={[styles.screen, isWide && extra.row]}>
-      <View style={extra.main}>
+    <View style={styles.screen}>
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        style={styles.list}
+        contentContainerStyle={[styles.listContent, { paddingHorizontal: pad }]}
         renderItem={({ item }) => <PostCard post={item} onPress={() => openPost(item.id)} />}
+        ListHeaderComponent={header}
         ListEmptyComponent={
           loading ? (
-            <ActivityIndicator style={extra.status} color={Colors.surfaceBorder} />
+            <ActivityIndicator style={styles.status} color={Colors.surfaceBorder} />
           ) : (
-            <Text style={[extra.status, extra.statusText]}>
-              {error || '아직 글이 없어요. 첫 글을 남겨보세요'}
-            </Text>
+            <Text style={[styles.status, styles.statusText]}>{error || '아직 글이 없어요. 첫 글을 남겨보세요'}</Text>
           )
         }
         ListFooterComponent={
           hasMore ? (
-            <Pressable style={extra.moreButton} onPress={loadMore} disabled={loadingMore}>
-              <Text style={extra.moreLabel}>{loadingMore ? '불러오는 중…' : '더 보기'}</Text>
+            <Pressable style={styles.moreButton} onPress={loadMore} disabled={loadingMore}>
+              <Text style={styles.moreLabel}>{loadingMore ? '불러오는 중…' : '더 보기'}</Text>
             </Pressable>
           ) : null
         }
-        ListHeaderComponent={
-          <View>
-            <View style={styles.headerRow}>
-              <Text style={styles.logo}>유사과학</Text>
-              <View style={styles.headerIcons}>
-                <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
-                  <Path
-                    d="M12 3a5 5 0 0 0-5 5v3.5c0 .8-.3 1.6-.9 2.2L5 15h14l-1.1-1.3c-.6-.6-.9-1.4-.9-2.2V8a5 5 0 0 0-5-5Z"
-                    stroke={Colors.text}
-                    strokeWidth={2}
-                    strokeLinejoin="round"
-                  />
-                </Svg>
-              </View>
-            </View>
-
-            {isWide ? null : popularBlock}
-
-            <View style={styles.topicRow}>
-              {topics.map((item) => (
-                <Pressable key={item.id} onPress={() => setTopicId(item.id)}>
-                  <Text style={[styles.topicLabel, topicId === item.id && styles.topicLabelActive]}>{item.name}</Text>
-                </Pressable>
-              ))}
-            </View>
-
-            <View style={styles.filterRow}>
-              {FILTERS.map((item) => (
-                <Pressable
-                  key={item}
-                  style={[styles.filterChip, filter === item && styles.filterChipActive]}
-                  onPress={() => setFilter(item)}>
-                  <Text style={[styles.filterLabel, filter === item && styles.filterLabelActive]}>{item}</Text>
-                </Pressable>
-              ))}
-            </View>
-          </View>
-        }
       />
 
-      <Pressable style={styles.fab} onPress={() => router.push('/post/new')}>
-        <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
-          <Path d="M12 5v14M5 12h14" stroke="#fff" strokeWidth={2.4} strokeLinecap="round" />
-        </Svg>
-      </Pressable>
-      </View>
-      {isWide && popularBlock ? <View style={extra.side}>{popularBlock}</View> : null}
+      {/* 좁은 화면에서만 떠 있는 글쓰기 버튼(넓은 화면은 사이드바·레일에 글쓰기가 있음) */}
+      {nav === 'bottom' ? (
+        <Pressable style={styles.fab} onPress={openWrite} accessibilityLabel="글쓰기">
+          <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
+            <Path d="M12 5v14M5 12h14" stroke={Colors.onInk} strokeWidth={2.4} strokeLinecap="round" />
+          </Svg>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
 
-const extra = StyleSheet.create({
-  moreButton: {
-    alignSelf: 'center',
-    borderWidth: 2,
-    borderColor: Colors.surfaceBorder,
-    borderRadius: Radius.pill,
-    paddingHorizontal: 22,
-    paddingVertical: 9,
-    marginTop: 4,
-  },
-  moreLabel: { fontSize: 14, color: Colors.text, fontWeight: '700' },
-  popularHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  periodRow: { flexDirection: 'row', gap: 12, paddingTop: 1 },
-  periodLabel: { fontSize: 12, color: Colors.textFaint },
-  periodLabelActive: { color: Colors.accent, fontWeight: '700' },
-  popularEmpty: { fontSize: 12, color: Colors.textFaint },
-  popularColumn: { flexDirection: 'column' },
-  popularCardWide: { flex: 0, alignSelf: 'stretch' },
-  row: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.four },
-  main: { flex: 1, maxWidth: 680, alignSelf: 'stretch' },
-  side: { width: 280, paddingTop: 72, paddingRight: Spacing.four },
-  status: { marginTop: 40 },
-  statusText: { textAlign: 'center', color: Colors.textFaint },
-});
+const RAIL_PAD_BREAKPOINT = 720;
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
-  listContent: {
-    padding: Spacing.four,
-    paddingBottom: 100,
-  },
-  headerRow: {
+  screen: { flex: 1, backgroundColor: Colors.background },
+  list: { flex: 1 },
+  // 본문은 항상 가운데 정렬하고 폭을 제한한다
+  listContent: { width: '100%', maxWidth: 760, alignSelf: 'center', paddingTop: 20, paddingBottom: 120 },
+
+  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
+  logo: { fontSize: 22, fontWeight: '800', color: Colors.text },
+
+
+  hero: { borderRadius: 24, paddingVertical: 26, paddingHorizontal: 24, marginBottom: 16, overflow: 'hidden' },
+  heroDecoA: { position: 'absolute', right: -30, top: -40, width: 150, height: 150, borderRadius: 75, opacity: 0.8 },
+  heroDecoB: { position: 'absolute', right: 70, bottom: -50, width: 90, height: 90, borderRadius: 45, opacity: 0.6 },
+  heroTitle: { fontSize: 30, fontWeight: '800', color: Colors.text, letterSpacing: -0.5 },
+  heroSub: { fontSize: 14, color: Colors.textMuted, marginTop: 6 },
+
+  composer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: Spacing.three,
+    gap: 12,
+    backgroundColor: Colors.card,
+    borderRadius: 20,
+    paddingVertical: 12,
+    paddingLeft: 14,
+    paddingRight: 12,
+    marginBottom: 24,
+    boxShadow: Shadow.card,
   },
-  logo: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: Colors.text,
+  composerHint: { flex: 1, fontSize: 15, color: Colors.textFaint },
+  composerButton: { backgroundColor: Colors.surfaceBorder, borderRadius: Radius.pill, paddingHorizontal: 16, paddingVertical: 9 },
+  composerButtonLabel: { color: Colors.onInk, fontSize: 14, fontWeight: '700' },
+
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
+  sectionTitle: { fontSize: 18, fontWeight: '800', color: Colors.text },
+  periodRow: { flexDirection: 'row', gap: 6 },
+  periodChip: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: Radius.pill },
+  periodChipActive: { backgroundColor: Colors.accentSurface },
+  periodLabel: { fontSize: 13, color: Colors.textFaint },
+  periodLabelActive: { color: Colors.accent, fontWeight: '700' },
+  popularEmpty: { fontSize: 13, color: Colors.textFaint, marginBottom: 20 },
+
+  trendingRow: { gap: 12, paddingBottom: 8, paddingTop: 2 },
+  trendingCard: {
+    width: 236,
+    backgroundColor: Colors.card,
+    borderRadius: 20,
+    padding: 16,
+    gap: 10,
+    boxShadow: Shadow.card,
   },
-  headerIcons: {
-    flexDirection: 'row',
-    gap: 14,
-  },
-  popularSection: {
-    marginBottom: Spacing.three,
-  },
-  popularLabel: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: Colors.accent,
-    marginBottom: 8,
-  },
-  popularRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  popularCard: {
-    flex: 1,
-    borderWidth: 2,
-    borderColor: Colors.accent,
+  rankBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: Colors.accentSurface,
-    borderRadius: Radius.medium,
-    paddingVertical: 9,
-    paddingHorizontal: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  popularRank: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: Colors.accent,
-    marginBottom: 2,
-  },
-  popularTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: Colors.text,
-  },
-  topicRow: {
-    flexDirection: 'row',
-    gap: 14,
-    marginBottom: Spacing.two,
-  },
-  topicLabel: {
-    fontSize: 15,
-    color: Colors.textFaint,
-    paddingBottom: 6,
-  },
-  topicLabelActive: {
-    color: Colors.text,
-    fontWeight: '700',
-    borderBottomWidth: 3,
-    borderBottomColor: Colors.surfaceBorder,
-  },
-  filterRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: Spacing.three,
-  },
-  filterChip: {
-    borderWidth: 1.5,
-    borderColor: Colors.surfaceBorder,
+  rankText: { fontSize: 14, fontWeight: '800', color: Colors.accent },
+  trendingTitle: { fontSize: 15, fontWeight: '700', color: Colors.text, lineHeight: 21, minHeight: 42 },
+  trendingLikes: { fontSize: 13, color: Colors.accent, fontWeight: '700' },
+
+  topicScroll: { marginTop: 22, marginBottom: 14, flexGrow: 0 },
+  topicRow: { gap: 8 },
+  topicPill: { paddingHorizontal: 16, paddingVertical: 9, borderRadius: Radius.pill, backgroundColor: Colors.card },
+  topicPillActive: { backgroundColor: Colors.surfaceBorder },
+  topicLabel: { fontSize: 14, color: Colors.textMuted, fontWeight: '600' },
+  topicLabelActive: { color: Colors.onInk },
+
+  filterRow: { flexDirection: 'row', gap: 18, marginBottom: 14, paddingHorizontal: 2 },
+  filterItem: { alignItems: 'center', paddingVertical: 4 },
+  filterLabel: { fontSize: 14, color: Colors.textFaint },
+  filterLabelActive: { color: Colors.text, fontWeight: '700' },
+  filterDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: Colors.accent, marginTop: 4 },
+
+  cardHover: { boxShadow: Shadow.cardHover },
+  statItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+
+  moreButton: {
+    alignSelf: 'center',
+    backgroundColor: Colors.card,
     borderRadius: Radius.pill,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
+    paddingHorizontal: 26,
+    paddingVertical: 12,
+    marginTop: 4,
+    boxShadow: Shadow.card,
   },
-  filterChipActive: {
-    backgroundColor: Colors.surfaceBorder,
-  },
-  filterLabel: {
-    fontSize: 12,
-    color: Colors.textMuted,
-  },
-  filterLabelActive: {
-    color: '#ffffff',
-  },
-  card: {
-    borderWidth: 2,
-    borderColor: Colors.surfaceBorder,
-    borderRadius: Radius.large,
-    padding: 14,
-    marginBottom: Spacing.three,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-    marginBottom: 6,
-  },
-  authorName: {
-    fontSize: 12,
-    color: Colors.textMuted,
-  },
-  timeAgo: {
-    fontSize: 12,
-    color: Colors.textFaint,
-  },
-  badgeRow: {
-    flexDirection: 'row',
-    gap: 6,
-    marginBottom: 8,
-  },
-  postTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: Colors.text,
-    marginBottom: 4,
-  },
-  postPreview: {
-    fontSize: 13,
-    color: '#7a7a7a',
-    marginBottom: 10,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: 14,
-  },
-  statItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  statText: {
-    fontSize: 12,
-    color: Colors.textMuted,
-  },
+  moreLabel: { fontSize: 14, color: Colors.text, fontWeight: '700' },
+  status: { marginTop: 40 },
+  statusText: { textAlign: 'center', color: Colors.textFaint },
+
   fab: {
     position: 'absolute',
     right: 20,
-    bottom: 24,
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    bottom: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: Colors.surfaceBorder,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 4,
+    boxShadow: '0 6px 20px rgba(23,20,31,0.28)',
   },
 });
