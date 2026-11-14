@@ -30,6 +30,8 @@ function RootNavigator() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="post/new" options={{ presentation: 'card' }} />
         <Stack.Screen name="post/[id]" options={{ presentation: 'card' }} />
+        <Stack.Screen name="search" options={{ presentation: 'card' }} />
+        <Stack.Screen name="profile-edit" options={{ presentation: 'card' }} />
       </Stack.Protected>
     </Stack>
   );
