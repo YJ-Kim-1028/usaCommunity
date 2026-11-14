@@ -22,10 +22,10 @@ export function PrimaryButton({ label, onPress, disabled = false }: PrimaryButto
 const styles = StyleSheet.create({
   button: {
     backgroundColor: Colors.surfaceBorder,
-    borderRadius: Radius.medium,
+    borderRadius: Radius.pill,
     paddingVertical: 16,
     alignItems: 'center',
-    minHeight: 52,
+    minHeight: 54,
     justifyContent: 'center',
   },
   pressed: {
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     opacity: 0.35,
   },
   label: {
-    color: '#ffffff',
+    color: Colors.onInk,
     fontSize: 16,
     fontWeight: '700',
   },

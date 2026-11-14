@@ -8,6 +8,7 @@ type BadgeProps = {
   style?: ViewStyle;
 };
 
+/** 작은 태그 칩. 기본은 연보라 바탕, filled는 진한 바탕에 흰 글자 */
 export function Badge({ label, filled = false, style }: BadgeProps) {
   return (
     <View style={[styles.badge, filled && styles.badgeFilled, style]}>
@@ -18,8 +19,7 @@ export function Badge({ label, filled = false, style }: BadgeProps) {
 
 const styles = StyleSheet.create({
   badge: {
-    borderWidth: 1.5,
-    borderColor: Colors.surfaceBorder,
+    backgroundColor: Colors.tag,
     borderRadius: Radius.pill,
     paddingHorizontal: 10,
     paddingVertical: 3,
@@ -29,9 +29,10 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 12,
-    color: Colors.text,
+    fontWeight: '600',
+    color: Colors.tagText,
   },
   labelFilled: {
-    color: '#ffffff',
+    color: Colors.onInk,
   },
 });

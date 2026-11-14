@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-import { Colors } from '@/constants/theme';
+import { Colors, Shadow } from '@/constants/theme';
 
 type StepHeaderProps = {
   step: number;
@@ -13,15 +13,9 @@ export function StepHeader({ step, total, onBack }: StepHeaderProps) {
   return (
     <View style={styles.row}>
       {onBack ? (
-        <Pressable onPress={onBack} hitSlop={12}>
-          <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
-            <Path
-              d="M15 5l-7 7 7 7"
-              stroke={Colors.surfaceBorder}
-              strokeWidth={2.2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+        <Pressable onPress={onBack} accessibilityLabel="뒤로가기" style={styles.back}>
+          <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+            <Path d="M15 5l-7 7 7 7" stroke={Colors.text} strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
           </Svg>
         </Pressable>
       ) : null}
@@ -43,6 +37,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 14,
   },
+  back: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: Shadow.card,
+  },
   track: {
     flex: 1,
     flexDirection: 'row',
@@ -51,14 +54,15 @@ const styles = StyleSheet.create({
   segment: {
     height: 6,
     flex: 1,
-    backgroundColor: Colors.divider,
+    backgroundColor: Colors.track,
     borderRadius: 3,
   },
   segmentFilled: {
-    backgroundColor: Colors.surfaceBorder,
+    backgroundColor: Colors.accent,
   },
   counter: {
-    fontSize: 14,
+    fontSize: 13,
+    fontWeight: '600',
     color: Colors.textFaint,
   },
 });
