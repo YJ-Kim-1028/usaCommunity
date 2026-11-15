@@ -22,7 +22,6 @@ import { useSession } from '@/lib/session';
 import { tintIndexOf } from '@/lib/time';
 
 const FILTERS = ['전체', '내 일주만', '내 MBTI만'] as const;
-const PERIODS = ['이번 주', '전체'] as const;
 const WEEK_DAYS = 7;
 const POPULAR_COUNT = 6;
 
@@ -44,7 +43,6 @@ export default function Feed() {
   const [topicId, setTopicId] = useState<string | undefined>();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>(FILTERS[0]);
   const [posts, setPosts] = useState<PostItem[]>([]);
-  const [period, setPeriod] = useState<(typeof PERIODS)[number]>(PERIODS[0]);
   const [popular, setPopular] = useState<PopularPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -105,12 +103,12 @@ export default function Feed() {
     setHasMore(data.length === POSTS_PAGE_SIZE);
   };
 
-  // 인기글은 앱에서 정렬하지 않고 DB 함수가 "이 게시판의 전체 글" 중에서 좋아요 순으로 골라 준다
+  // 인기글은 앱에서 정렬하지 않고 DB 함수가 "이 게시판의 최근 7일 글" 중에서 좋아요 순으로 골라 준다
   useFocusEffect(
     useCallback(() => {
       if (!topicId) return;
       let active = true;
-      fetchPopularPosts({ topicId, days: period === '이번 주' ? WEEK_DAYS : undefined, limit: POPULAR_COUNT }).then(
+      fetchPopularPosts({ topicId, days: WEEK_DAYS, limit: POPULAR_COUNT }).then(
         ({ data }) => {
           if (active) setPopular(data ?? []);
         },
@@ -118,7 +116,7 @@ export default function Feed() {
       return () => {
         active = false;
       };
-    }, [topicId, period]),
+    }, [topicId]),
   );
 
   const openPost = (id: string) => router.push({ pathname: '/post/[id]', params: { id } });
@@ -162,17 +160,7 @@ export default function Feed() {
 
       {/* 지금 인기 있는 글: 가로로 넘겨 보는 카드 */}
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>지금 인기 있는 글</Text>
-        <View style={styles.periodRow}>
-          {PERIODS.map((item) => (
-            <Pressable
-              key={item}
-              onPress={() => setPeriod(item)}
-              style={[styles.periodChip, period === item && styles.periodChipActive]}>
-              <Text style={[styles.periodLabel, period === item && styles.periodLabelActive]}>{item}</Text>
-            </Pressable>
-          ))}
-        </View>
+        <Text style={styles.sectionTitle}>이번 주 인기 있는 글</Text>
       </View>
       {popular.length > 0 ? (
         <ScrollView
@@ -200,7 +188,7 @@ export default function Feed() {
         </ScrollView>
       ) : (
         <Text style={styles.popularEmpty}>
-          {period === '이번 주' ? '이번 주에는 아직 인기글이 없어요' : '아직 인기글이 없어요'}
+          이번 주에는 아직 인기글이 없어요
         </Text>
       )}
 
@@ -300,11 +288,6 @@ const styles = StyleSheet.create({
 
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
   sectionTitle: { fontSize: 18, fontWeight: '800', color: Colors.text },
-  periodRow: { flexDirection: 'row', gap: 6 },
-  periodChip: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: Radius.pill },
-  periodChipActive: { backgroundColor: Colors.accentSurface },
-  periodLabel: { fontSize: 13, color: Colors.textFaint },
-  periodLabelActive: { color: Colors.accent, fontWeight: '700' },
   popularEmpty: { fontSize: 13, color: Colors.textFaint, marginBottom: 20 },
 
   trendingRow: { gap: 12, paddingBottom: 8, paddingTop: 2 },
