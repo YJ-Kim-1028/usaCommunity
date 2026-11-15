@@ -122,13 +122,6 @@ console.log('인덱스 크기: 기존 (topic_id, created_at)', sizeFull, ' / 부
 console.log('\n=== 5단계: 인기글 7일 + created_at 부분 인덱스 확인 ===');
 await report('인기글 7일', POP_7);
 
-console.log('\n=== 6단계: 좋아요 수를 posts에 저장(비정규화) ===');
-await q('alter table posts add column like_count int not null default 0');
-await q('update posts p set like_count = c.n from (select post_id, count(*) n from likes group by post_id) c where c.post_id = p.id');
-await q('create index posts_topic_likes_idx on posts (topic_id, like_count desc, created_at desc) where deleted_at is null');
-await q('analyze posts');
-await report('인기글 전체 기간 (like_count 열 사용)', `select id,title,like_count from posts where topic_id=3 and deleted_at is null order by like_count desc, created_at desc limit 2`);
-
 console.log('\n=== 쓰기 비용: 글 10만 개를 넣는 시간 ===');
 const db2 = new PGlite();
 async function loadTime(idxSql) {
